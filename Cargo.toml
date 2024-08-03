@@ -1,0 +1,18 @@
+[package]
+name = "embassy-stm32-plus"
+version = "0.1.0"
+edition = "2021"
+description = "embassy-stm32 plus"
+readme = "Readme.md"
+authors = ["nobody"]
+license = "MIT/Apache-2.0"
+categories = ["embedded"]
+repository = "https://github.com/lifeRobot/embassy-stm32-plus"
+
+[dependencies]
+embassy-stm32 = { version = "0.1.0", features = ["time-driver-any", "unstable-pac", "defmt", "memory-x"] }
+
+[features]
+stm32f1 = []
+stm32f103 = ["stm32f1"]
+stm32f103rc = ["stm32f103", "embassy-stm32/stm32f103rc"]
