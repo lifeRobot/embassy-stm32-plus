@@ -10,7 +10,7 @@ categories = ["embedded"]
 repository = "https://github.com/lifeRobot/embassy-stm32-plus"
 
 [dependencies]
-embassy-stm32 = { version = "0.1.0", features = ["time-driver-any", "unstable-pac", "defmt", "memory-x"] }
+embassy-stm32 = { version = "0.1.0", features = ["time-driver-any", "unstable-pac", "defmt", "memory-x"], optional = true }
 
 [features]
 stm32f1 = []

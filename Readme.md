@@ -9,6 +9,8 @@ Make Rust Embedded simpler
 
 ### uart example
 
+Cargo.toml file :
+
 ```toml
 embassy-stm32-plus = { version = "0.1.0", features = ["stm32f103rc"] }
 embassy-executor = { version = "0.5.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
@@ -18,6 +20,8 @@ cortex-m = { version = "0.7.7", features = ["inline-asm", "critical-section-sing
 cortex-m-rt = "0.7.3"
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 ```
+
+main.rs file :
 
 ```rust
 #![no_std]
