@@ -1,6 +1,6 @@
 [package]
 name = "embassy-stm32-plus"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "embassy-stm32 plus"
 readme = "Readme.md"
@@ -15,4 +15,32 @@ embassy-stm32 = { version = "0.1.0", features = ["time-driver-any", "unstable-pa
 [features]
 stm32f1 = []
 stm32f103 = ["stm32f1"]
+stm32f103t4 = ["stm32f103", "embassy-stm32/stm32f103t4"]
+stm32f103t6 = ["stm32f103", "embassy-stm32/stm32f103t6"]
+stm32f103t8 = ["stm32f103", "embassy-stm32/stm32f103t8"]
+stm32f103tb = ["stm32f103", "embassy-stm32/stm32f103tb"]
+stm32f103c4 = ["stm32f103", "embassy-stm32/stm32f103c4"]
+stm32f103c6 = ["stm32f103", "embassy-stm32/stm32f103c6"]
+stm32f103c8 = ["stm32f103", "embassy-stm32/stm32f103c8"]
+stm32f103cb = ["stm32f103", "embassy-stm32/stm32f103cb"]
+stm32f103r4 = ["stm32f103", "embassy-stm32/stm32f103r4"]
+stm32f103r6 = ["stm32f103", "embassy-stm32/stm32f103r6"]
+stm32f103r8 = ["stm32f103", "embassy-stm32/stm32f103r8"]
+stm32f103rb = ["stm32f103", "embassy-stm32/stm32f103rb"]
 stm32f103rc = ["stm32f103", "embassy-stm32/stm32f103rc"]
+stm32f103rd = ["stm32f103", "embassy-stm32/stm32f103rd"]
+stm32f103re = ["stm32f103", "embassy-stm32/stm32f103re"]
+stm32f103rf = ["stm32f103", "embassy-stm32/stm32f103rf"]
+stm32f103rg = ["stm32f103", "embassy-stm32/stm32f103rg"]
+stm32f103v8 = ["stm32f103", "embassy-stm32/stm32f103v8"]
+stm32f103vb = ["stm32f103", "embassy-stm32/stm32f103vb"]
+stm32f103vc = ["stm32f103", "embassy-stm32/stm32f103vc"]
+stm32f103vd = ["stm32f103", "embassy-stm32/stm32f103vd"]
+stm32f103ve = ["stm32f103", "embassy-stm32/stm32f103ve"]
+stm32f103vf = ["stm32f103", "embassy-stm32/stm32f103vf"]
+stm32f103vg = ["stm32f103", "embassy-stm32/stm32f103vg"]
+stm32f103zc = ["stm32f103", "embassy-stm32/stm32f103zc"]
+stm32f103zd = ["stm32f103", "embassy-stm32/stm32f103zd"]
+stm32f103ze = ["stm32f103", "embassy-stm32/stm32f103ze"]
+stm32f103zf = ["stm32f103", "embassy-stm32/stm32f103zf"]
+stm32f103zg = ["stm32f103", "embassy-stm32/stm32f103zg"]

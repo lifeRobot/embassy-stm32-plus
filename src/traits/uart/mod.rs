@@ -2,16 +2,15 @@ use embassy_stm32::dma::NoDma;
 use embassy_stm32::Peripheral;
 use embassy_stm32::usart::{BasicInstance, Config, Uart};
 
-pub mod uart1;
-pub mod uart2;
-pub mod uart3;
+pub mod rx;
+pub mod tx;
 
 /// all uart trait
-pub trait UartAllTrait<Tx, Rx, Rts, Ctx, TxDma = NoDma, RxDma = NoDma>: BasicInstance {
-    fn build_with_dma_rtscts_config(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, ctx: Ctx, config: Config) -> Uart<'static, Self, TxDma, RxDma>;
+pub trait UartAllTrait<Tx, Rx, Rts, Cts, TxDma = NoDma, RxDma = NoDma>: BasicInstance {
+    fn build_with_dma_rtscts_config(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, cts: Cts, config: Config) -> Uart<'static, Self, TxDma, RxDma>;
 
-    fn build_with_dma_rtscts(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, ctx: Ctx) -> Uart<'static, Self, TxDma, RxDma> {
-        self.build_with_dma_rtscts_config(tx, rx, tx_dma, rx_dma, rts, ctx, Config::default())
+    fn build_with_dma_rtscts(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, cts: Cts) -> Uart<'static, Self, TxDma, RxDma> {
+        self.build_with_dma_rtscts_config(tx, rx, tx_dma, rx_dma, rts, cts, Config::default())
     }
 }
 
@@ -61,10 +60,12 @@ pub trait UartTrait<Tx, Rx>: UartDmaTrait<Tx, Rx> {
 #[macro_export]
 macro_rules! use_uart_trait {
     () => {
-        use embassy_stm32::usart::{Config, Uart};
+        use embassy_stm32::usart::{Config, Uart, UartRx, UartTx};
         use embassy_stm32::Peripheral;
         use embassy_stm32::dma::NoDma;
-        use $crate::stm32f1::stm32f103::stm32f103rc::uart::{UartAllTrait, UartDmaAnyTrait, UartDmaTrait, UartRtsCtsTrait, UartTrait};
+        use $crate::traits::uart::{UartAllTrait, UartDmaAnyTrait, UartDmaTrait, UartRtsCtsTrait, UartTrait};
+        use $crate::traits::uart::rx::{UartRxAllTrait, UartRxDmaAnyTrait, UartRxDmaTrait, UartRxRtsCtsTrait, UartRxTrait};
+        use $crate::traits::uart::tx::{UartTxAllTrait, UartTxDmaAnyTrait, UartTxDmaTrait, UartTxRtsCtsTrait, UartTxTrait};
     };
 }
 
