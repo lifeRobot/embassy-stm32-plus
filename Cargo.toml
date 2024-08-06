@@ -11,9 +11,12 @@ repository = "https://github.com/lifeRobot/embassy-stm32-plus"
 
 [dependencies]
 embassy-stm32 = { version = "0.1.0", features = ["time-driver-any", "unstable-pac", "defmt", "memory-x"], optional = true }
+embassy-time = { version = "0.3.2", optional = true }
+embedded-hal = { version = "0.2.7", optional = true }
+embassy-usb = { version = "0.3.0", optional = true }
 
 [features]
-stm32f1 = []
+stm32f1 = ["embassy-time", "embedded-hal", "embassy-usb"]
 stm32f103 = ["stm32f1"]
 stm32f103t4 = ["stm32f103", "embassy-stm32/stm32f103t4"]
 stm32f103t6 = ["stm32f103", "embassy-stm32/stm32f103t6"]

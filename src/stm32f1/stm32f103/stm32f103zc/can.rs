@@ -1,0 +1,1 @@
+crate::impl_can_100!();
