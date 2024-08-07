@@ -1,6 +1,6 @@
 [package]
 name = "embassy-stm32-plus"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "embassy-stm32 plus"
 readme = "Readme.md"

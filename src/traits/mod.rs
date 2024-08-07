@@ -23,6 +23,6 @@ pub mod crc;
 pub mod dac;
 pub mod i2c;
 pub mod spi;
-// TODO Under development
-// #[cfg(feature = "embassy-usb")]
-// pub mod usb;
+#[cfg(feature = "embassy-usb")]
+pub mod usb;
+pub mod uid;

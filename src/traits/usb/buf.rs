@@ -1,30 +1,27 @@
-// use alloc::boxed::Box;
-
 /// usb buffer
-pub struct UsbBuf<'a> {
-    pub device_descriptor: &'a mut [u8],
-    pub config_descriptor: &'a mut [u8],
-    pub bos_descriptor: &'a mut [u8],
-    pub control_buf: &'a mut [u8],
+pub struct UsbBuf<const DD: usize, const CD: usize, const BD: usize, const CB: usize> {
+    pub device_descriptor: [u8; DD],
+    pub config_descriptor: [u8; CD],
+    pub bos_descriptor: [u8; BD],
+    pub control_buf: [u8; CB],
 }
 
 /// custom method
-impl<'a> UsbBuf<'a> {
+impl<const DD: usize, const CD: usize, const BD: usize, const CB: usize> UsbBuf<DD, CD, BD, CB> {
     /// create usb buf
-    pub fn new(device_descriptor: &'a mut [u8], config_descriptor: &'a mut [u8], bos_descriptor: &'a mut [u8], control_buf: &'a mut [u8]) -> Self {
+    pub fn new(device_descriptor: [u8; DD], config_descriptor: [u8; CD], bos_descriptor: [u8; BD], control_buf: [u8; CB]) -> Self {
         Self { device_descriptor, config_descriptor, bos_descriptor, control_buf }
     }
 }
 
-/*/// support default
-impl Default for UsbBuf<'_> {
-    /// the default method will create a 'static lifetime, please use it with caution
+/// support default
+impl Default for UsbBuf<256, 256, 256, 7> {
     fn default() -> Self {
         Self {
-            device_descriptor: Box::leak(Box::new([0; 256])),
-            config_descriptor: Box::leak(Box::new([0; 256])),
-            bos_descriptor: Box::leak(Box::new([0; 256])),
-            control_buf: Box::leak(Box::new([0; 7])),
+            device_descriptor: [0; 256],
+            config_descriptor: [0; 256],
+            bos_descriptor: [0; 256],
+            control_buf: [0; 7],
         }
     }
-}*/
+}
