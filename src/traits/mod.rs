@@ -42,3 +42,4 @@ pub mod spi;
 #[cfg(feature = "embassy-usb")]
 pub mod usb;
 pub mod uid;
+pub mod wdg;
