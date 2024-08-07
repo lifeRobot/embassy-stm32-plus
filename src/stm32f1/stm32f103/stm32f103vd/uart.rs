@@ -1,3 +1,3 @@
-crate::f103_uart1!();
-crate::f103z_uart2!();
-crate::f103z_uart3!();
+crate::mod_uart1!();
+crate::modz_uart2!();
+crate::modz_uart3!();

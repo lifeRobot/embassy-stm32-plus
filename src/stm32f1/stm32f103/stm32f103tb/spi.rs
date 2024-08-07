@@ -1,1 +1,1 @@
-crate::f103_spi1!();
+crate::mod_spi1!();

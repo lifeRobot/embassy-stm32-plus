@@ -1,1 +1,1 @@
-crate::f103_gpio_60!();
+crate::impl_gpio_60!();

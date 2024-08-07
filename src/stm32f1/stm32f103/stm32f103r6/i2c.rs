@@ -1,1 +1,1 @@
-crate::f103c_i2c1!();
+crate::modc_i2c1!();

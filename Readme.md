@@ -4,7 +4,7 @@ Make Rust Embedded simpler
 
 ### support now
 
-- stm32f103xx(uart/gpio/flash) &#10004;
+- stm32f103xx &#10004;
 - more support comming soon
 
 ### example
