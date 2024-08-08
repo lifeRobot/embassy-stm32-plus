@@ -4,6 +4,9 @@ Make Rust Embedded simpler
 
 ### support now
 
+- stm32f100xx &#10004;
+- stm32f101xx &#10004;
+- stm32f102xx &#10004;
 - stm32f103xx &#10004;
 - more support comming soon
 
@@ -15,7 +18,7 @@ Make Rust Embedded simpler
 Cargo.toml file :
 
 ```toml
-embassy-stm32-plus = { version = "0.1.2", features = ["stm32f103rc"] }
+embassy-stm32-plus = { version = "0.1.3", features = ["stm32f103rc"] }
 embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
 defmt-rtt = "0.4.1"
 cortex-m-rt = "0.7.3"
@@ -61,9 +64,10 @@ async fn main(_spawner: Spawner) {
 <details>
 <summary>gpio example</summary>
 
-Cargo.toml: 
+Cargo.toml:
+
 ```toml
-embassy-stm32-plus = { version = "0.1.2", features = ["stm32f103rc"] }
+embassy-stm32-plus = { version = "0.1.3", features = ["stm32f103rc"] }
 embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
 defmt-rtt = "0.4.1"
 cortex-m-rt = "0.7.3"
@@ -107,7 +111,7 @@ async fn main(_spawner: Spawner) {
 Cargo.toml file:
 
 ```toml
-embassy-stm32-plus = { version = "0.1.2", features = ["stm32f103rc"] }
+embassy-stm32-plus = { version = "0.1.3", features = ["stm32f103rc"] }
 embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
 embassy-futures = { version = "0.1.1" }
 defmt = "0.3.8"

@@ -13,9 +13,6 @@ pub mod acm_state;
 pub mod ncm_state;
 
 crate::usb_irqs!();
-/*bind_interrupts!(pub struct Irqs {
-    USB_LP_CAN1_RX0 => usb::InterruptHandler<USB>;
-});*/
 
 /// usb trait
 pub trait UsbTrait<'a, DP, DM>: Peripheral + Instance {
