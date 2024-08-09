@@ -39,9 +39,9 @@ pub mod crc;
 pub mod dac;
 pub mod i2c;
 pub mod spi;
-#[cfg(all(feature = "embassy-usb", not(feature = "stm32f105")))]
+#[cfg(feature = "embassy-usb")]
 pub mod usb;
-#[cfg(feature = "stm32f105")]
-pub mod usb_otg;
 pub mod uid;
 pub mod wdg;
+#[cfg(feature = "embassy-net")]
+pub mod eth;

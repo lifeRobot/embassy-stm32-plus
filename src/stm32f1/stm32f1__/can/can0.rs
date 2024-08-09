@@ -2,10 +2,10 @@
 #[macro_export]
 macro_rules! impl_can_36 {
     () => {
-        use $crate::traits::can::CanTrait;
         use embassy_stm32::{bind_interrupts, can};
         use embassy_stm32::can::Can;
         use embassy_stm32::peripherals::{CAN, PA11, PA12};
+        use $crate::traits::can::CanTrait;
 
         bind_interrupts!(pub struct Irqs {
             USB_LP_CAN1_RX0 => can::Rx0InterruptHandler<CAN>;

@@ -10,10 +10,11 @@ categories = ["embedded"]
 repository = "https://github.com/lifeRobot/embassy-stm32-plus"
 
 [dependencies]
-embassy-stm32 = { version = "0.1.0", features = ["time-driver-any", "unstable-pac", "defmt", "memory-x"], optional = true }
+embassy-stm32 = { version = "0.1.0", features = ["time-driver-any", "memory-x"], optional = true }
 embassy-time = { version = "0.3.2", optional = true }
 embedded-hal = { version = "0.2.7", optional = true }
 embassy-usb = { version = "0.3.0", optional = true }
+embassy-net = { version = "0.4.0", features = ["dhcpv4"], optional = true }
 
 [features]
 stm32f1 = ["embassy-time", "embedded-hal"]
@@ -22,6 +23,7 @@ stm32f101 = ["stm32f1"]
 stm32f102 = ["stm32f1", "embassy-usb"]
 stm32f103 = ["stm32f1", "embassy-usb"]
 stm32f105 = ["stm32f1", "embassy-usb"]
+stm32f107 = ["stm32f1", "embassy-usb", "embassy-net"]
 stm32f100c4 = ["stm32f100", "embassy-stm32/stm32f100c4"]
 stm32f100c6 = ["stm32f100", "embassy-stm32/stm32f100c6"]
 stm32f100c8 = ["stm32f100", "embassy-stm32/stm32f100c8"]
@@ -107,4 +109,11 @@ stm32f103zd = ["stm32f103", "embassy-stm32/stm32f103zd"]
 stm32f103ze = ["stm32f103", "embassy-stm32/stm32f103ze"]
 stm32f103zf = ["stm32f103", "embassy-stm32/stm32f103zf"]
 stm32f103zg = ["stm32f103", "embassy-stm32/stm32f103zg"]
+stm32f105r8 = ["stm32f105", "embassy-stm32/stm32f105r8"]
+stm32f105rb = ["stm32f105", "embassy-stm32/stm32f105rb"]
+stm32f105rc = ["stm32f105", "embassy-stm32/stm32f105rc"]
+stm32f105v8 = ["stm32f105", "embassy-stm32/stm32f105v8"]
+stm32f105vb = ["stm32f105", "embassy-stm32/stm32f105vb"]
 stm32f105vc = ["stm32f105", "embassy-stm32/stm32f105vc"]
+stm32f107vb = ["stm32f107", "embassy-stm32/stm32f107vb"]
+stm32f107vc = ["stm32f107", "embassy-stm32/stm32f107vc"]
