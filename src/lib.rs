@@ -9,8 +9,6 @@ pub use embassy_time;
 pub use embedded_hal;
 #[cfg(feature = "embassy-usb")]
 pub use embassy_usb;
-#[cfg(feature = "embassy-net")]
-pub use embassy_net;
 
 #[cfg(feature = "stm32f1")]
 pub mod stm32f1;

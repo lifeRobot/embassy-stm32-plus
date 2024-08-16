@@ -43,5 +43,4 @@ pub mod spi;
 pub mod usb;
 pub mod uid;
 pub mod wdg;
-#[cfg(feature = "embassy-net")]
 pub mod eth;

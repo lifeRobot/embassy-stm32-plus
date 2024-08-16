@@ -1,3 +1,4 @@
+mod stm32f105__;
 #[cfg(feature = "stm32f105r8")]
 pub mod stm32f105r8;
 #[cfg(feature = "stm32f105rb")]
