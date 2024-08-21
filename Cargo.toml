@@ -16,7 +16,10 @@ embedded-hal = { version = "0.2.7", optional = true }
 embassy-usb = { version = "0.3.0", optional = true }
 
 [features]
+stm32c0 = []
 stm32f1 = ["embassy-time", "embedded-hal"]
+stm32c011 = ["stm32c0"]
+stm32c031 = ["stm32c0"]
 stm32f100 = ["stm32f1"]
 stm32f101 = ["stm32f1"]
 stm32f102 = ["stm32f1", "embassy-usb"]

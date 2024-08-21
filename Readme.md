@@ -253,7 +253,7 @@ async fn echo<'d>(class: &mut CdcAcmClass<'d, Driver<'d, USB_OTG_FS>>) -> Result
 
 <details>
 <summary>eth example (stm32f107xx)</summary>
-Tips: currently, only stm32f107xx in the cargo crate supports eth 
+Tips: currently, only stm32f107xx in the cargo crate supports eth
 
 Cargo.toml file:
 
