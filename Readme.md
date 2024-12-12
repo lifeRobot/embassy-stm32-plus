@@ -260,13 +260,11 @@ Cargo.toml file:
 ```toml
 embassy-stm32-plus = { version = "0.1.4", features = ["stm32f107vc"] }
 embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
-embassy-futures = { version = "0.1.1" }
-embassy-net = { version = "0.4.0", features = ["dhcpv4", "tcp"] }
+embassy-net = { version = "0.5.0", features = ["dhcpv4", "tcp"] }
 embedded-io-async = "0.6.1"
 static_cell = "2.1.0"
 defmt = "0.3.8"
 defmt-rtt = "0.4.1"
-cortex-m = { version = "0.7.7", features = ["inline-asm", "critical-section-single-core"] }
 cortex-m-rt = "0.7.3"
 panic-probe = { version = "0.3.2", features = ["print-defmt"] }
 ```
@@ -278,7 +276,7 @@ main.rs file:
 #![no_main]
 
 use embassy_executor::Spawner;
-use embassy_net::{Ipv4Address, Stack, StackResources};
+use embassy_net::{Ipv4Address, StackResources};
 use embassy_net::tcp::TcpSocket;
 use embassy_stm32_plus::{embassy_stm32, embassy_time};
 use embassy_stm32_plus::embassy_stm32::eth::generic_smi::GenericSMI;
@@ -302,11 +300,10 @@ async fn main(spawner: Spawner) {
 
     // Init network stack, copy from https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
     let config = embassy_net::Config::dhcpv4(Default::default());
-    static STACK: StaticCell<Stack<Ethernet<ETH, GenericSMI>>> = StaticCell::new();
     static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
     // stm32f107 not support rng, random seed set default 0
-    let stack = &*STACK.init(Stack::new(eth, config, RESOURCES.init(StackResources::new()), 0));
-    defmt::unwrap!(spawner.spawn(net_task(stack)));
+    let (stack, runner) = embassy_net::new(eth, config, RESOURCES.init(StackResources::new()), 0);
+    defmt::unwrap!(spawner.spawn(net_task(runner)));
     stack.wait_config_up().await;
 
     defmt::info!("Network task initialized");
@@ -341,8 +338,8 @@ async fn main(spawner: Spawner) {
 }
 
 #[embassy_executor::task]
-async fn net_task(stack: &'static Stack<Ethernet<'_, ETH, GenericSMI>>) -> ! {
-    stack.run().await
+async fn net_task(mut runner: embassy_net::Runner<'static, Ethernet<'static, ETH, GenericSMI>>) -> ! {
+    runner.run().await
 }
 ```
 
@@ -351,12 +348,94 @@ async fn net_task(stack: &'static Stack<Ethernet<'_, ETH, GenericSMI>>) -> ! {
 <details>
 <summary>eth w5500 example</summary>
 
-1. STM32F1xxxx currently does not support ETH W5500 because STM32F1xxxxx does not support exti. more see:
-   https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth_w5500.rs
-2. This is determined by the limitations of crates [`embassy-stm32`](https://crates.io/crates/embassy-stm32)
-   and [`embassy-net-wiznet`](https://crates.io/crates/embassy-net-wiznet). You can try using RTOS to implement support
-   for eth w5500, more see [stm32f1](https://crates.io/crates/stm32f1)
-   or [rust-embedded](https://github.com/rust-embedded)
+Cargo.toml file:
+
+```toml
+embassy-stm32-plus = { git = "https://github.com/lifeRobot/embassy-stm32-plus", features = ["stm32f107vc", "exti"] }
+
+embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
+embassy-net = { version = "0.5.0", features = ["dhcpv4", "tcp"] }
+embassy-net-wiznet = "0.1.0"
+embedded-hal-bus = { version = "0.2.0", features = ["async"] }
+embedded-io-async = "0.6.1"
+static_cell = "2.1.0"
+defmt = "0.3.10"
+defmt-rtt = "0.4.1"
+cortex-m-rt = "0.7.3"
+panic-probe = { version = "0.3.2", features = ["print-defmt"] }
+```
+
+```rust
+#![no_std]
+#![no_main]
+
+use embassy_executor::Spawner;
+use embassy_net::{Ipv4Address, StackResources};
+use embassy_net::tcp::TcpSocket;
+use embassy_stm32_plus::{embassy_stm32, embassy_time};
+use embassy_stm32_plus::embassy_stm32::eth::generic_smi::GenericSMI;
+use embassy_stm32_plus::embassy_stm32::eth::{Ethernet, PacketQueue};
+use embassy_stm32_plus::embassy_stm32::peripherals::ETH;
+use embassy_stm32_plus::embassy_time::Timer;
+use embassy_stm32_plus::traits::eth::Eth1;
+use embedded_io_async::Write;
+use static_cell::StaticCell;
+use {defmt_rtt as _, panic_probe as _};
+
+#[embassy_executor::main]
+async fn main(spawner: Spawner) {
+    // rcc setting or etc., more see https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
+    let p = embassy_stm32::init(Default::default());
+
+    // simple build eth
+    static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
+    let mac_addr = [0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF];
+    let eth = p.ETH.eth1(&p, PACKETS.init(PacketQueue::<4, 4>::new()), GenericSMI::new(0), mac_addr);
+
+    // Init network stack, copy from https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
+    let config = embassy_net::Config::dhcpv4(Default::default());
+    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
+    // stm32f107 not support rng, random seed set default 0
+    let (stack, runner) = embassy_net::new(eth, config, RESOURCES.init(StackResources::new()), 0);
+    defmt::unwrap!(spawner.spawn(net_task(runner)));
+    stack.wait_config_up().await;
+
+    defmt::info!("Network task initialized");
+    // Then we can use it!
+    let mut rx_buffer = [0; 4096];
+    let mut tx_buffer = [0; 4096];
+
+    loop {
+        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
+
+        socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+
+        let remote_endpoint = (Ipv4Address::new(10, 42, 0, 1), 8000);
+        defmt::info!("connecting...");
+        let r = socket.connect(remote_endpoint).await;
+        if let Err(e) = r {
+            defmt::info!("connect error: {:?}", e);
+            Timer::after_secs(1).await;
+            continue;
+        }
+        defmt::info!("connected!");
+        let buf = [0; 1024];
+        loop {
+            let r = socket.write_all(&buf).await;
+            if let Err(e) = r {
+                defmt::info!("write error: {:?}", e);
+                break;
+            }
+            Timer::after_secs(1).await;
+        }
+    }
+}
+
+#[embassy_executor::task]
+async fn net_task(mut runner: embassy_net::Runner<'static, Ethernet<'static, ETH, GenericSMI>>) -> ! {
+    runner.run().await
+}
+```
 
 </details>
 

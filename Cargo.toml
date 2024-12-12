@@ -16,6 +16,8 @@ embedded-hal = { version = "0.2.7", optional = true }
 embassy-usb = { version = "0.3.0", optional = true }
 
 [features]
+# support exti, used to support W5500 and etc
+exti = ["embassy-stm32/exti"]
 stm32c0 = []
 stm32f1 = ["embassy-time", "embedded-hal"]
 stm32c011 = ["stm32c0"]
