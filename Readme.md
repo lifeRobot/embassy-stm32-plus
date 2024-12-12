@@ -372,12 +372,18 @@ panic-probe = { version = "0.3.2", features = ["print-defmt"] }
 use embassy_executor::Spawner;
 use embassy_net::{Ipv4Address, StackResources};
 use embassy_net::tcp::TcpSocket;
-use embassy_stm32_plus::{embassy_stm32, embassy_time};
-use embassy_stm32_plus::embassy_stm32::eth::generic_smi::GenericSMI;
-use embassy_stm32_plus::embassy_stm32::eth::{Ethernet, PacketQueue};
-use embassy_stm32_plus::embassy_stm32::peripherals::ETH;
-use embassy_stm32_plus::embassy_time::Timer;
-use embassy_stm32_plus::traits::eth::Eth1;
+use embassy_net_wiznet::{Device, Runner, State};
+use embassy_net_wiznet::chip::W5500;
+use embassy_stm32_plus::embassy_stm32;
+use embassy_stm32_plus::embassy_stm32::exti::ExtiInput;
+use embassy_stm32_plus::embassy_stm32::gpio::{Level, Output, Speed};
+use embassy_stm32_plus::embassy_stm32::peripherals::{DMA1_CH2, DMA1_CH3, PA4, PB0, PB1, SPI1};
+use embassy_stm32_plus::embassy_stm32::spi::Spi;
+use embassy_stm32_plus::embassy_time::{Delay, Duration, Timer};
+use embassy_stm32_plus::traits::gpio::input::GpioInput;
+use embassy_stm32_plus::traits::gpio::output::GpioOutput;
+use embassy_stm32_plus::traits::spi::SpiDmaTrait;
+use embedded_hal_bus::spi::ExclusiveDevice;
 use embedded_io_async::Write;
 use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
@@ -386,29 +392,36 @@ use {defmt_rtt as _, panic_probe as _};
 async fn main(spawner: Spawner) {
     // rcc setting or etc., more see https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
     let p = embassy_stm32::init(Default::default());
+    let spi = p.SPI1.build_with_dma(p.PA5, p.PA7, p.PA6, p.DMA1_CH3, p.DMA1_CH2);
+    let cs = p.PA4.output_with_level_speed(Level::High, Speed::VeryHigh);
+    let spi = defmt::unwrap!(ExclusiveDevice::new(spi,cs,Delay));
 
-    // simple build eth
-    static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
-    let mac_addr = [0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF];
-    let eth = p.ETH.eth1(&p, PACKETS.init(PacketQueue::<4, 4>::new()), GenericSMI::new(0), mac_addr);
+    let w5500_int = ExtiInput::new(p.PB0.input(), p.EXTI0);
+    let w5500_reset = p.PB1.output_with_level_speed(Level::High, Speed::VeryHigh);
 
-    // Init network stack, copy from https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
+    let mac_addr = [0x02, 234, 3, 4, 82, 231];
+    static STATE: StaticCell<State<2, 2>> = StaticCell::new();
+    let state = STATE.init(State::<2, 2>::new());
+    let (device, runner) = embassy_net_wiznet::new(mac_addr, state, spi, w5500_int, w5500_reset)
+        .await;
+    defmt::unwrap!(spawner.spawn(ethernet_task(runner)));
+
     let config = embassy_net::Config::dhcpv4(Default::default());
     static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
-    // stm32f107 not support rng, random seed set default 0
-    let (stack, runner) = embassy_net::new(eth, config, RESOURCES.init(StackResources::new()), 0);
+    let (stack, runner) = embassy_net::new(device, config, RESOURCES.init(StackResources::new()), 0);
     defmt::unwrap!(spawner.spawn(net_task(runner)));
     stack.wait_config_up().await;
 
     defmt::info!("Network task initialized");
+
     // Then we can use it!
-    let mut rx_buffer = [0; 4096];
-    let mut tx_buffer = [0; 4096];
+    let mut rx_buffer = [0; 1024];
+    let mut tx_buffer = [0; 1024];
 
     loop {
         let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
 
-        socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+        socket.set_timeout(Some(Duration::from_secs(10)));
 
         let remote_endpoint = (Ipv4Address::new(10, 42, 0, 1), 8000);
         defmt::info!("connecting...");
@@ -431,10 +444,22 @@ async fn main(spawner: Spawner) {
     }
 }
 
+#[allow(clippy::type_complexity)]
 #[embassy_executor::task]
-async fn net_task(mut runner: embassy_net::Runner<'static, Ethernet<'static, ETH, GenericSMI>>) -> ! {
+async fn ethernet_task(
+    runner:
+    Runner<'static, W5500,
+        ExclusiveDevice<Spi<'static, SPI1, DMA1_CH3, DMA1_CH2>, Output<'static, PA4>, Delay>,
+        ExtiInput<'static, PB0>,
+        Output<'static, PB1>>) -> ! {
     runner.run().await
 }
+
+#[embassy_executor::task]
+async fn net_task(mut runner: embassy_net::Runner<'static, Device<'static>>) -> ! {
+    runner.run().await
+}
+
 ```
 
 </details>
