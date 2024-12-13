@@ -16,3 +16,6 @@ pub mod stm32c0;
 pub mod stm32f1;
 #[cfg(feature = "embassy-stm32")]
 pub mod traits;
+#[cfg(feature = "embassy-stm32")]
+pub mod builder;
+pub mod r#macro;

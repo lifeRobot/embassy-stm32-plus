@@ -20,8 +20,8 @@ Make Rust Embedded simpler
 Cargo.toml file :
 
 ```toml
-embassy-stm32-plus = { version = "0.1.4", features = ["stm32f103rc"] }
-embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
+embassy-stm32-plus = { git = "https://github.com/lifeRobot/embassy-stm32-plus", features = ["stm32f103rc"] }
+embassy-executor = { version = "0.6.3", features = ["arch-cortex-m", "executor-thread"] }
 defmt-rtt = "0.4.1"
 cortex-m-rt = "0.7.3"
 panic-probe = { version = "0.3.2", features = ["print-defmt"] }
@@ -34,31 +34,34 @@ main.rs file :
 #![no_main]
 
 use embassy_executor::Spawner;
+use embassy_stm32_plus::builder::uart::uart1::Uart1Builder;
+use embassy_stm32_plus::builder::uart::uart1::rx::Uart1Rx;
+use embassy_stm32_plus::builder::uart::uart1::tx::Uart1Tx;
 use embassy_stm32_plus::embassy_stm32;
-use embassy_stm32_plus::embassy_time::Timer;
-use embassy_stm32_plus::traits::uart::UartDmaTrait;
 use {defmt_rtt as _, panic_probe as _};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    // init stm32, get Peripheral
     let p = embassy_stm32::init(Default::default());
+    // just write
+    /*let mut tx = Uart1TxBuilder::new(p.USART1, Uart1Tx::PA9(p.PA9))
+        .build_write(p.DMA1_CH4).unwrap();
+    tx.write(b"hello world").await.unwrap();*/
 
-    // simple init uart
-    // let uart = p.USART3.build_with_dma(p.PB10, p.PB11, p.DMA1_CH2, p.DMA1_CH3);
-    // let uart = p.USART2.build_with_dma(p.PA2, p.PA3, p.DMA1_CH7, p.DMA1_CH6);
-    let uart = p.USART1.build_with_dma(p.PA9, p.PA10, p.DMA1_CH4, p.DMA1_CH5);
-    let (mut tx, _rx) = uart.split();
+    // just read
+    /*let mut rx = Uart1RxBuilder::new(p.USART1, Uart1Rx::PA10(p.PA10))
+        .build_read(p.DMA1_CH5).unwrap();
+    let mut bytes = [0; 1024];
+    rx.read(&mut bytes).await.unwrap();*/
 
-    // let mut b = [0; 1024];
-    // rx.read(&mut b).await.unwrap();
-
-    // send data to uart
-    loop {
-        tx.write(b"hello world").await.unwrap();
-        Timer::after_millis(1000).await;
-    }
+    // read and write
+    let mut uart = Uart1Builder::new(p.USART1, Uart1Tx::PA9(p.PA9), Uart1Rx::PA10(p.PA10))
+        .build_all(p.DMA1_CH4, p.DMA1_CH5).unwrap();
+    uart.write(b"hello world").await.unwrap();
+    let mut bytes = [0; 1024];
+    uart.read(&mut bytes).await.unwrap();
 }
+
 ```
 
 </details>
