@@ -1,19 +1,22 @@
-use embassy_stm32::Peripheral;
+use embassy_stm32::{bind_interrupts, Peripheral, usart};
 use embassy_stm32::dma::NoDma;
 use embassy_stm32::peripherals::{DMA1_CH4, DMA1_CH5, PA11, PA12, USART1};
 use embassy_stm32::usart::{Config, ConfigError, RxPin, TxPin, Uart};
-use crate::builder::uart::uart1::base::{Irqs, Uart1Base};
+use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart1::rx::{Uart1Rx, Uart1RxBuilder};
 use crate::builder::uart::uart1::tx::Uart1Tx;
 
-pub mod base;
 pub mod rx;
 pub mod tx;
+
+bind_interrupts!(struct Irqs {
+    USART1 => usart::InterruptHandler<USART1>;
+});
 
 /// uart1 builder
 pub struct Uart1Builder {
     /// uart1 base data
-    pub base: Uart1Base,
+    pub base: UartBase<USART1>,
     /// uart1 tx pin
     pub tx: Uart1Tx,
     /// uart1 rx pin
@@ -27,7 +30,7 @@ impl Uart1Builder {
     /// create builder
     #[inline]
     pub fn new(uart: USART1, tx: Uart1Tx, rx: Uart1Rx) -> Self {
-        Self { base: Uart1Base::new(uart), tx, rx, rts_cts: None }
+        Self { base: UartBase::new(uart), tx, rx, rts_cts: None }
     }
 
     /// set uart config
@@ -95,7 +98,7 @@ impl Uart1Builder {
     fn build_rts_cts<TxDma, RxDma>(
         tx: impl Peripheral<P=impl TxPin<USART1>> + 'static,
         rx: impl Peripheral<P=impl RxPin<USART1>> + 'static,
-        base: Uart1Base,
+        base: UartBase<USART1>,
         tx_dma: impl Peripheral<P=TxDma> + 'static,
         rx_dma: impl Peripheral<P=RxDma> + 'static,
         rts_cts: Option<(PA12, PA11)>)

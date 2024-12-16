@@ -2,8 +2,8 @@ use embassy_stm32::dma::NoDma;
 use embassy_stm32::Peripheral;
 use embassy_stm32::peripherals::{DMA1_CH5, PA10, PA12, PB7, USART1};
 use embassy_stm32::usart::{Config, ConfigError, RxPin, UartRx};
-use crate::builder::uart::uart1::base::Irqs;
-use crate::builder::uart::uart1::Uart1Base;
+use crate::builder::uart::base::UartBase;
+use crate::builder::uart::uart1::Irqs;
 
 /// uart1 rx pin
 pub enum Uart1Rx {
@@ -14,19 +14,19 @@ pub enum Uart1Rx {
 /// uart1 rx builder
 pub struct Uart1RxBuilder {
     /// uart1 base data
-    pub base: Uart1Base,
+    pub base: UartBase<USART1>,
     /// rx pin
     pub rx: Uart1Rx,
     /// use rts
     pub rts: Option<PA12>,
 }
 
-/// uart1 tx builder
+/// uart1 rx builder
 impl Uart1RxBuilder {
     /// create builder
     #[inline]
     pub fn new(uart: USART1, rx: Uart1Rx) -> Self {
-        Self { base: Uart1Base::new(uart), rx, rts: None }
+        Self { base: UartBase::new(uart), rx, rts: None }
     }
 
     /// set uart cnfig
@@ -43,7 +43,7 @@ impl Uart1RxBuilder {
         self
     }
 
-    /// can not write
+    /// can not read
     #[inline]
     pub fn build_disable(self) -> Result<UartRx<'static, USART1, NoDma>, ConfigError> {
         self.build_rx(NoDma)
@@ -67,7 +67,7 @@ impl Uart1RxBuilder {
     fn build_rts<RxDma>(
         rx: impl Peripheral<P=impl RxPin<USART1>> + 'static,
         rx_dma: impl Peripheral<P=RxDma> + 'static,
-        base: Uart1Base,
+        base: UartBase<USART1>,
         rts: Option<PA12>)
         -> Result<UartRx<'static, USART1, RxDma>, ConfigError> {
         let rts = crate::match_some_return!(rts,

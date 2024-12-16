@@ -1,25 +1,19 @@
-use embassy_stm32::{bind_interrupts, usart};
-use embassy_stm32::peripherals::USART1;
+use embassy_stm32::Peripheral;
 use embassy_stm32::usart::Config;
 
-bind_interrupts!(pub(crate) struct Irqs {
-    USART1 => usart::InterruptHandler<USART1>;
-});
-
-
-/// uart1 base data
-pub struct Uart1Base {
+/// uart base data
+pub struct UartBase<T: Peripheral> {
     /// uart config
     pub config: Option<Config>,
     /// uart1 devices
-    pub uart: USART1,
+    pub uart: T,
 }
 
 /// custom method
-impl Uart1Base {
+impl<T: Peripheral> UartBase<T> {
     /// create base data
     #[inline]
-    pub fn new(uart: USART1) -> Self {
+    pub fn new(uart: T) -> Self {
         Self { uart, config: None }
     }
 

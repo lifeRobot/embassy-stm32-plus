@@ -2,7 +2,7 @@ use embassy_stm32::dma::NoDma;
 use embassy_stm32::Peripheral;
 use embassy_stm32::peripherals::{DMA1_CH4, PA11, PA9, PB6, USART1};
 use embassy_stm32::usart::{Config, ConfigError, TxPin, UartTx};
-use crate::builder::uart::uart1::Uart1Base;
+use crate::builder::uart::base::UartBase;
 
 /// uart1 tx pin
 pub enum Uart1Tx {
@@ -13,7 +13,7 @@ pub enum Uart1Tx {
 /// uart1 tx builder
 pub struct Uart1TxBuilder {
     /// uart1 base data
-    pub base: Uart1Base,
+    pub base: UartBase<USART1>,
     /// tx pin
     pub tx: Uart1Tx,
     /// use cts
@@ -25,7 +25,7 @@ impl Uart1TxBuilder {
     /// create builder
     #[inline]
     pub fn new(uart: USART1, tx: Uart1Tx) -> Self {
-        Self { base: Uart1Base::new(uart), tx, cts: None }
+        Self { base: UartBase::new(uart), tx, cts: None }
     }
 
     /// set uart config
@@ -66,7 +66,7 @@ impl Uart1TxBuilder {
     fn build_cts<TxDma>(
         tx: impl Peripheral<P=impl TxPin<USART1>> + 'static,
         tx_dma: impl Peripheral<P=TxDma> + 'static,
-        base: Uart1Base,
+        base: UartBase<USART1>,
         cts: Option<PA11>)
         -> Result<UartTx<'static, USART1, TxDma>, ConfigError> {
         let cts = crate::match_some_return!(cts,
