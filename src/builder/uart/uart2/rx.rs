@@ -1,6 +1,8 @@
 use embassy_stm32::dma::NoDma;
 use embassy_stm32::Peripheral;
-use embassy_stm32::peripherals::{DMA1_CH6, PA1, PA3, PD4, PD6, USART2};
+use embassy_stm32::peripherals::{DMA1_CH6, PA1, PA3, USART2};
+#[cfg(any(feature = "pin_100", feature = "pin_144"))]
+use embassy_stm32::peripherals::{PD4, PD6};
 use embassy_stm32::usart::{Config, ConfigError, RxPin, UartRx};
 use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart2::Irqs;
@@ -19,7 +21,7 @@ pub enum Uart2Rts {
     PD4(PD4),
 }
 
-/// custom methoc
+/// uart2 rx builder
 pub struct Uart2RxBuilder {
     /// uart2 base device
     pub base: UartBase<USART2>,
@@ -29,7 +31,7 @@ pub struct Uart2RxBuilder {
     pub rts: Option<Uart2Rts>,
 }
 
-/// uart2 rx builder
+/// custom method
 impl Uart2RxBuilder {
     /// create builder
     #[inline]
