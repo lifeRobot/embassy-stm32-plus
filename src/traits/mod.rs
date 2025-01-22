@@ -9,7 +9,7 @@ pub mod adc;
 pub mod can;
 #[cfg(not(feature = "stm32l0"))]
 pub mod crc;
-#[cfg(not(any(
+/*#[cfg(not(any(
     feature = "stm32f103vb",
     feature = "stm32f103v8",
     feature = "stm32f103tb",
@@ -41,14 +41,14 @@ pub mod crc;
     feature = "stm32f101t4",
     feature = "stm32l0"
 )))]
-pub mod dac;
+pub mod dac;*/
 #[cfg(not(feature = "stm32l0"))]
 pub mod eth;
 pub mod flash;
 pub mod gpio;
-pub mod i2c;
-pub mod spi;
-pub mod uart;
+// pub mod i2c;
+// pub mod spi;
+// pub mod uart;
 pub mod uid;
 #[cfg(feature = "embassy-usb")]
 pub mod usb;

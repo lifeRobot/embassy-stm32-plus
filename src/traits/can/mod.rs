@@ -3,7 +3,7 @@ use embassy_stm32::Peripheral;
 
 /// can trait
 pub trait CanTrait<Rx, Tx>: Peripheral + Instance {
-    fn build(self, rx: Rx, tx: Tx) -> Can<'static, Self>;
+    fn build(self, rx: Rx, tx: Tx) -> Can<'static>;
 }
 
 /// impl can trait
@@ -11,7 +11,7 @@ pub trait CanTrait<Rx, Tx>: Peripheral + Instance {
 macro_rules! impl_can_trait {
     ($can:ty,$rx:ty,$tx:ty) => {
         impl CanTrait<$rx,$tx> for $can {
-            fn build(self, rx: $rx, tx: $tx) -> Can<'static, Self> {
+            fn build(self, rx: $rx, tx: $tx) -> Can<'static> {
                 Can::new(self,rx,tx,Irqs)
             }
         }

@@ -1,1 +1,0 @@
-crate::impl_adc2!();

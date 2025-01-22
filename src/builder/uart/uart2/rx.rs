@@ -1,9 +1,9 @@
-use embassy_stm32::dma::NoDma;
+use embassy_stm32::mode::Async;
 use embassy_stm32::Peripheral;
 use embassy_stm32::peripherals::{DMA1_CH6, PA1, PA3, USART2};
 #[cfg(any(feature = "pin_100", feature = "pin_144"))]
 use embassy_stm32::peripherals::{PD4, PD6};
-use embassy_stm32::usart::{Config, ConfigError, RxPin, UartRx};
+use embassy_stm32::usart::{Config, ConfigError, RxDma, RxPin, UartRx};
 use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart2::Irqs;
 
@@ -53,20 +53,20 @@ impl Uart2RxBuilder {
         self
     }
 
-    /// can not read
+    /*/// can not read
     #[inline]
-    pub fn build_disable(self) -> Result<UartRx<'static, USART2, NoDma>, ConfigError> {
+    pub fn build_disable(self) -> Result<UartRx<'static, Async>, ConfigError> {
         self.build_rx(NoDma)
-    }
+    }*/
 
     /// build uart rx that supports read data
     #[inline]
-    pub fn build_read(self, read_dma: DMA1_CH6) -> Result<UartRx<'static, USART2, DMA1_CH6>, ConfigError> {
+    pub fn build_read(self, read_dma: DMA1_CH6) -> Result<UartRx<'static, Async>, ConfigError> {
         self.build_rx(read_dma)
     }
 
     /// build by rx
-    fn build_rx<RxDma>(self, rx_dma: impl Peripheral<P=RxDma> + 'static) -> Result<UartRx<'static, USART2, RxDma>, ConfigError> {
+    fn build_rx(self, rx_dma: impl Peripheral<P=impl RxDma<USART2>> + 'static) -> Result<UartRx<'static, Async>, ConfigError> {
         match self.rx {
             Uart2Rx::PA3(pa3) => { Self::build_rts(pa3, rx_dma, self.base, self.rts) }
             #[cfg(any(feature = "pin_100", feature = "pin_144"))]
@@ -75,12 +75,12 @@ impl Uart2RxBuilder {
     }
 
     /// build by rts
-    fn build_rts<RxDma>(
+    fn build_rts(
         rx: impl Peripheral<P=impl RxPin<USART2>> + 'static,
-        rx_dma: impl Peripheral<P=RxDma> + 'static,
+        rx_dma: impl Peripheral<P=impl RxDma<USART2>> + 'static,
         base: UartBase<USART2>,
         rts: Option<Uart2Rts>)
-        -> Result<UartRx<'static, USART2, RxDma>, ConfigError> {
+        -> Result<UartRx<'static, Async>, ConfigError> {
         let rts = crate::match_some_return!(rts,
             UartRx::new(base.uart, Irqs, rx, rx_dma, base.config.unwrap_or_default()));
 

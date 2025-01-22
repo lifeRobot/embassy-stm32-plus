@@ -1,6 +1,6 @@
-use embassy_stm32::{bind_interrupts, Peripheral, usb_otg};
+use embassy_stm32::{bind_interrupts, Peripheral, usb};
 use embassy_stm32::peripherals::{PA11, PA12, USB_OTG_FS};
-pub use embassy_stm32::usb_otg::{Config as OtgConfig, Driver, Instance};
+pub use embassy_stm32::usb::{Config as OtgConfig, Driver, Instance};
 use embassy_usb::{Builder, Config, UsbDevice};
 use embassy_usb::class::cdc_acm::CdcAcmClass;
 use embassy_usb::class::cdc_ncm::CdcNcmClass;
@@ -9,7 +9,7 @@ use crate::traits::usb::buf::UsbBuf;
 use crate::traits::usb::ncm_state::NcmState;
 
 bind_interrupts!(pub struct Irqs {
-    OTG_FS => usb_otg::InterruptHandler<USB_OTG_FS>;
+    OTG_FS => usb::InterruptHandler<USB_OTG_FS>;
 });
 
 /// usb otg trait
@@ -25,6 +25,7 @@ pub trait UsbOtgTrait<'a, DP, DM>: Peripheral + Instance {
     /// Must be large enough to fit all OUT endpoint max packet sizes.
     /// Endpoint allocation will fail if it is too small.
     fn driver(self, dp: DP, dm: DM, ep_out_buffer: &'a mut [u8]) -> Driver<'a, Self> {
+
         let mut otg_config = OtgConfig::default();
         otg_config.vbus_detection = false;
         self.driver_with_config(dp, dm, ep_out_buffer, otg_config)

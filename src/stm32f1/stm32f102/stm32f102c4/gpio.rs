@@ -1,1 +1,0 @@
-crate::impl_gpio_60!();

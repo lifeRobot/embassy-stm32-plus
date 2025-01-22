@@ -1,4 +1,4 @@
-use embassy_stm32::dma::NoDma;
+use embassy_stm32::mode::Async;
 use embassy_stm32::Peripheral;
 use embassy_stm32::peripherals::{DMA1_CH4, PA11, PA9, PB6, USART1};
 use embassy_stm32::usart::{Config, ConfigError, TxPin, UartTx};
@@ -42,20 +42,14 @@ impl Uart1TxBuilder {
         self
     }
 
-    /// can not write
-    #[inline]
-    pub fn build_disable(self) -> Result<UartTx<'static, USART1>, ConfigError> {
-        self.build_tx(NoDma)
-    }
-
     /// build uart tx that supports write data
     #[inline]
-    pub fn build_write(self, write_dma: DMA1_CH4) -> Result<UartTx<'static, USART1, DMA1_CH4>, ConfigError> {
-        self.build_tx(write_dma)
+    pub fn build(self, tx_dma: DMA1_CH4) -> Result<UartTx<'static, Async>, ConfigError> {
+        self.build_tx(tx_dma)
     }
 
     /// build by tx
-    fn build_tx<TxDma>(self, tx_dma: impl Peripheral<P=TxDma> + 'static) -> Result<UartTx<'static, USART1, TxDma>, ConfigError> {
+    fn build_tx(self, tx_dma: DMA1_CH4) -> Result<UartTx<'static, Async>, ConfigError> {
         match self.tx {
             Uart1Tx::PA9(pa9) => { Self::build_cts(pa9, tx_dma, self.base, self.cts) }
             Uart1Tx::PB6(pb6) => { Self::build_cts(pb6, tx_dma, self.base, self.cts) }
@@ -63,12 +57,12 @@ impl Uart1TxBuilder {
     }
 
     /// build cts or default
-    fn build_cts<TxDma>(
+    fn build_cts(
         tx: impl Peripheral<P=impl TxPin<USART1>> + 'static,
-        tx_dma: impl Peripheral<P=TxDma> + 'static,
+        tx_dma: DMA1_CH4,
         base: UartBase<USART1>,
         cts: Option<PA11>)
-        -> Result<UartTx<'static, USART1, TxDma>, ConfigError> {
+        -> Result<UartTx<'static, Async>, ConfigError> {
         let cts = crate::match_some_return!(cts,
             UartTx::new(base.uart, tx, tx_dma, base.config.unwrap_or_default()));
         UartTx::new_with_cts(base.uart, tx, cts, tx_dma, base.config.unwrap_or_default())

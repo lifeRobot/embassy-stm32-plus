@@ -1,7 +1,7 @@
-use embassy_stm32::dma::NoDma;
+use embassy_stm32::mode::Async;
 use embassy_stm32::Peripheral;
 use embassy_stm32::peripherals::{DMA1_CH5, PA10, PA12, PB7, USART1};
-use embassy_stm32::usart::{Config, ConfigError, RxPin, UartRx};
+use embassy_stm32::usart::{Config, ConfigError, RxDma, RxPin, UartRx};
 use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart1::Irqs;
 
@@ -43,20 +43,20 @@ impl Uart1RxBuilder {
         self
     }
 
-    /// can not read
+    /*/// can not read
     #[inline]
-    pub fn build_disable(self) -> Result<UartRx<'static, USART1, NoDma>, ConfigError> {
+    pub fn build_disable(self) -> Result<UartRx<'static, Async>, ConfigError> {
         self.build_rx(NoDma)
-    }
+    }*/
 
     /// build uart rx that supports read data
     #[inline]
-    pub fn build_read(self, read_dma: DMA1_CH5) -> Result<UartRx<'static, USART1, DMA1_CH5>, ConfigError> {
+    pub fn build_read(self, read_dma: DMA1_CH5) -> Result<UartRx<'static, Async>, ConfigError> {
         self.build_rx(read_dma)
     }
 
     /// build by rx
-    fn build_rx<RxDma>(self, rx_dma: impl Peripheral<P=RxDma> + 'static) -> Result<UartRx<'static, USART1, RxDma>, ConfigError> {
+    fn build_rx(self, rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static) -> Result<UartRx<'static, Async>, ConfigError> {
         match self.rx {
             Uart1Rx::PA10(pa10) => { Self::build_rts(pa10, rx_dma, self.base, self.rts) }
             Uart1Rx::PB7(pb7) => { Self::build_rts(pb7, rx_dma, self.base, self.rts) }
@@ -64,12 +64,12 @@ impl Uart1RxBuilder {
     }
 
     /// build rts or default
-    fn build_rts<RxDma>(
+    fn build_rts(
         rx: impl Peripheral<P=impl RxPin<USART1>> + 'static,
-        rx_dma: impl Peripheral<P=RxDma> + 'static,
+        rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static,
         base: UartBase<USART1>,
         rts: Option<PA12>)
-        -> Result<UartRx<'static, USART1, RxDma>, ConfigError> {
+        -> Result<UartRx<'static, Async>, ConfigError> {
         let rts = crate::match_some_return!(rts,
             UartRx::new(base.uart, Irqs, rx, rx_dma, base.config.unwrap_or_default()));
         UartRx::new_with_rts(base.uart, Irqs, rx, rts, rx_dma, base.config.unwrap_or_default())

@@ -1,9 +1,9 @@
-use embassy_stm32::dma::NoDma;
+use embassy_stm32::mode::Async;
 use embassy_stm32::Peripheral;
 use embassy_stm32::peripherals::{DMA1_CH2, PB10, PB13, PC10, USART3};
 #[cfg(any(feature = "pin_100", feature = "pin_144"))]
 use embassy_stm32::peripherals::{PD11, PD8};
-use embassy_stm32::usart::{Config, ConfigError, TxPin, UartTx};
+use embassy_stm32::usart::{Config, ConfigError, TxDma, TxPin, UartTx};
 use crate::builder::uart::base::UartBase;
 
 /// uart3 tx pin
@@ -53,20 +53,20 @@ impl Uart3TxBuilder {
         self
     }
 
-    /// can not write
+    /*/// can not write
     #[inline]
-    pub fn build_disable(self) -> Result<UartTx<'static, USART3, NoDma>, ConfigError> {
+    pub fn build_disable(self) -> Result<UartTx<'static, Async>, ConfigError> {
         self.build_tx(NoDma)
-    }
+    }*/
 
     /// build uart tx that supports write data
     #[inline]
-    pub fn build_write(self, write_dma: DMA1_CH2) -> Result<UartTx<'static, USART3, DMA1_CH2>, ConfigError> {
+    pub fn build_write(self, write_dma: DMA1_CH2) -> Result<UartTx<'static, Async>, ConfigError> {
         self.build_tx(write_dma)
     }
 
     /// build by tx
-    fn build_tx<TxDma>(self, tx_dma: impl Peripheral<P=TxDma> + 'static) -> Result<UartTx<'static, USART3, TxDma>, ConfigError> {
+    fn build_tx(self, tx_dma: impl Peripheral<P=impl TxDma<USART3>> + 'static) -> Result<UartTx<'static, Async>, ConfigError> {
         match self.tx {
             Uart3Tx::PB10(pb10) => { Self::build_cts(pb10, tx_dma, self.base, self.cts) }
             Uart3Tx::PC10(pc10) => { Self::build_cts(pc10, tx_dma, self.base, self.cts) }
@@ -76,12 +76,12 @@ impl Uart3TxBuilder {
     }
 
     /// build by cts
-    fn build_cts<TxDma>(
+    fn build_cts(
         tx: impl Peripheral<P=impl TxPin<USART3>> + 'static,
-        tx_dma: impl Peripheral<P=TxDma> + 'static,
+        tx_dma: impl Peripheral<P=impl TxDma<USART3>> + 'static,
         base: UartBase<USART3>,
         cts: Option<Uart3Cts>)
-        -> Result<UartTx<'static, USART3, TxDma>, ConfigError> {
+        -> Result<UartTx<'static, Async>, ConfigError> {
         let cts = crate::match_some_return!(cts,
             UartTx::new(base.uart, tx, tx_dma, base.config.unwrap_or_default()));
 

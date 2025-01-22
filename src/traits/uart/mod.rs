@@ -1,62 +1,63 @@
 use embassy_stm32::dma::NoDma;
+use embassy_stm32::mode::Async;
 use embassy_stm32::Peripheral;
-use embassy_stm32::usart::{BasicInstance, Config, Uart};
+use embassy_stm32::usart::{Config, Uart};
 
 pub mod rx;
 pub mod tx;
 
 /// all uart trait
-pub trait UartAllTrait<Tx, Rx, Rts, Cts, TxDma = NoDma, RxDma = NoDma>: BasicInstance {
-    fn build_with_dma_rtscts_config(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, cts: Cts, config: Config) -> Uart<'static, Self, TxDma, RxDma>;
+pub trait UartAllTrait<Tx, Rx, Rts, Cts, TxDma = NoDma, RxDma = NoDma>: Sized {
+    fn build_with_dma_rtscts_config(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, cts: Cts, config: Config) -> Uart<'static, Async>;
 
     #[deprecated(note = "please use Uart1Builder or Uart2Builder or Uart3Builder")]
-    fn build_with_dma_rtscts(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, cts: Cts) -> Uart<'static, Self, TxDma, RxDma> {
+    fn build_with_dma_rtscts(self, tx: Tx, rx: Rx, tx_dma: TxDma, rx_dma: RxDma, rts: Rts, cts: Cts) -> Uart<'static, Async> {
         self.build_with_dma_rtscts_config(tx, rx, tx_dma, rx_dma, rts, cts, Config::default())
     }
 }
 
 /// rtscts uart trait
 pub trait UartRtsCtsTrait<Tx, Rx, Rts, Cts>: UartAllTrait<Tx, Rx, Rts, Cts> {
-    fn build_with_rtscts_config(self, tx: Tx, rx: Rx, rts: Rts, cts: Cts, config: Config) -> Uart<'static, Self> {
+    fn build_with_rtscts_config(self, tx: Tx, rx: Rx, rts: Rts, cts: Cts, config: Config) -> Uart<'static, Async> {
         self.build_with_dma_rtscts_config(tx, rx, NoDma, NoDma, rts, cts, config)
     }
 
     #[deprecated(note = "please use Uart1Builder or Uart2Builder or Uart3Builder")]
-    fn build_with_rtscts(self, tx: Tx, rx: Rx, rts: Rts, cts: Cts) -> Uart<'static, Self> {
+    fn build_with_rtscts(self, tx: Tx, rx: Rx, rts: Rts, cts: Cts) -> Uart<'static, Async> {
         self.build_with_rtscts_config(tx, rx, rts, cts, Config::default())
     }
 }
 
 /// dma any uart trait
-pub trait UartDmaAnyTrait<Tx, Rx>: BasicInstance {
-    fn build_with_dma_config_any<TxDma, RxDma>(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static, config: Config) -> Uart<'static, Self, TxDma, RxDma>;
+pub trait UartDmaAnyTrait<Tx, Rx>: Sized {
+    fn build_with_dma_config_any<TxDma, RxDma>(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static, config: Config) -> Uart<'static, Async>;
 
     #[deprecated(note = "please use Uart1Builder or Uart2Builder or Uart3Builder")]
-    fn build_with_dma_any<TxDma, RxDma>(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static) -> Uart<'static, Self, TxDma, RxDma> {
+    fn build_with_dma_any<TxDma, RxDma>(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static) -> Uart<'static, Async> {
         self.build_with_dma_config_any(tx, rx, tx_dma, rx_dma, Config::default())
     }
 }
 
 /// dma uart trait
 pub trait UartDmaTrait<Tx, Rx, TxDma = NoDma, RxDma = NoDma>: UartDmaAnyTrait<Tx, Rx> {
-    fn build_with_dma_config(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static, config: Config) -> Uart<'static, Self, TxDma, RxDma> {
+    fn build_with_dma_config(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static, config: Config) -> Uart<'static, Async> {
         self.build_with_dma_config_any(tx, rx, tx_dma, rx_dma, config)
     }
 
     #[deprecated(note = "please use Uart1Builder or Uart2Builder or Uart3Builder")]
-    fn build_with_dma(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static) -> Uart<'static, Self, TxDma, RxDma> {
+    fn build_with_dma(self, tx: Tx, rx: Rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static) -> Uart<'static, Async> {
         self.build_with_dma_config(tx, rx, tx_dma, rx_dma, Config::default())
     }
 }
 
 /// simple uart trait
 pub trait UartTrait<Tx, Rx>: UartDmaTrait<Tx, Rx> {
-    fn build_with_config(self, tx: Tx, rx: Rx, config: Config) -> Uart<'static, Self> {
+    fn build_with_config(self, tx: Tx, rx: Rx, config: Config) -> Uart<'static, Async> {
         self.build_with_dma_config(tx, rx, NoDma, NoDma, config)
     }
 
     #[deprecated(note = "please use Uart1Builder or Uart2Builder or Uart3Builder")]
-    fn build(self, tx: Tx, rx: Rx) -> Uart<'static, Self> {
+    fn build(self, tx: Tx, rx: Rx) -> Uart<'static, Async> {
         self.build_with_config(tx, rx, Config::default())
     }
 }
@@ -81,10 +82,11 @@ macro_rules! impl_uart_trait {
         impl UartDmaTrait<$tx, $rx, $tx_dma, $rx_dma> for $uart {}
     };
     ($uart:ty,$tx:ty,$rx:ty) => {
+        use embassy_stm32::mode::Async;
         $crate::impl_uart_trait!($uart,$tx,$rx,NoDma,NoDma);
 
         impl UartDmaAnyTrait<$tx,$rx> for $uart {
-            fn build_with_dma_config_any<TxDma, RxDma>(self, tx: $tx, rx: $rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static, config: Config) -> Uart<'static, Self, TxDma, RxDma> {
+            fn build_with_dma_config_any<TxDma, RxDma>(self, tx: $tx, rx: $rx, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static, config: Config) -> Uart<'static, Async> {
                 Uart::new(self, rx, tx, Irqs, tx_dma, rx_dma, config).expect("create usart fail")
             }
         }

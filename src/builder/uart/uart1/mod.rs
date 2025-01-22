@@ -1,7 +1,7 @@
 use embassy_stm32::{bind_interrupts, Peripheral, usart};
-use embassy_stm32::dma::NoDma;
+use embassy_stm32::mode::Async;
 use embassy_stm32::peripherals::{DMA1_CH4, DMA1_CH5, PA11, PA12, USART1};
-use embassy_stm32::usart::{Config, ConfigError, RxPin, TxPin, Uart};
+use embassy_stm32::usart::{Config, ConfigError, RxDma, RxPin, TxDma, TxPin, Uart};
 use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart1::rx::{Uart1Rx, Uart1RxBuilder};
 use crate::builder::uart::uart1::tx::Uart1Tx;
@@ -47,32 +47,14 @@ impl Uart1Builder {
         self
     }
 
-    /// can not read and write
-    #[inline]
-    pub fn build_disable(self) -> Result<Uart<'static, USART1>, ConfigError> {
-        self.build_tx(NoDma, NoDma)
-    }
-
-    /// build a serial port that only supports read data
-    #[inline]
-    pub fn build_read(self, read_dma: DMA1_CH5) -> Result<Uart<'static, USART1, NoDma, DMA1_CH5>, ConfigError> {
-        self.build_tx(NoDma, read_dma)
-    }
-
-    /// build a serial port that only supports write data
-    #[inline]
-    pub fn build_write(self, write_dma: DMA1_CH4) -> Result<Uart<'static, USART1, DMA1_CH4, NoDma>, ConfigError> {
-        self.build_tx(write_dma, NoDma)
-    }
-
     /// build a serial port that supports read and write data
     #[inline]
-    pub fn build_all(self, write_dma: DMA1_CH4, read_dma: DMA1_CH5) -> Result<Uart<'static, USART1, DMA1_CH4, DMA1_CH5>, ConfigError> {
+    pub fn build(self, write_dma: DMA1_CH4, read_dma: DMA1_CH5) -> Result<Uart<'static, Async>, ConfigError> {
         self.build_tx(write_dma, read_dma)
     }
 
     /// build by tx
-    fn build_tx<TxDma, RxDma>(self, tx_dma: impl Peripheral<P=TxDma> + 'static, rx_dma: impl Peripheral<P=RxDma> + 'static) -> Result<Uart<'static, USART1, TxDma, RxDma>, ConfigError> {
+    fn build_tx(self, tx_dma: impl Peripheral<P=impl TxDma<USART1>> + 'static, rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static) -> Result<Uart<'static, Async>, ConfigError> {
         let rx = Uart1RxBuilder { base: self.base, rx: self.rx, rts: None };
         match self.tx {
             Uart1Tx::PA9(pa9) => { Self::build_rx(pa9, rx, tx_dma, rx_dma, self.rts_cts) }
@@ -81,13 +63,13 @@ impl Uart1Builder {
     }
 
     /// build by rx
-    fn build_rx<TxDma, RxDma>(
+    fn build_rx(
         tx: impl Peripheral<P=impl TxPin<USART1>> + 'static,
         rx: Uart1RxBuilder,
-        tx_dma: impl Peripheral<P=TxDma> + 'static,
-        rx_dma: impl Peripheral<P=RxDma> + 'static,
+        tx_dma: impl Peripheral<P=impl TxDma<USART1>> + 'static,
+        rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static,
         rts_cts: Option<(PA12, PA11)>)
-        -> Result<Uart<'static, USART1, TxDma, RxDma>, ConfigError> {
+        -> Result<Uart<'static, Async>, ConfigError> {
         match rx.rx {
             Uart1Rx::PA10(pa10) => { Self::build_rts_cts(tx, pa10, rx.base, tx_dma, rx_dma, rts_cts) }
             Uart1Rx::PB7(pb7) => { Self::build_rts_cts(tx, pb7, rx.base, tx_dma, rx_dma, rts_cts) }
@@ -95,14 +77,14 @@ impl Uart1Builder {
     }
 
     /// build rts_cts or default
-    fn build_rts_cts<TxDma, RxDma>(
+    fn build_rts_cts(
         tx: impl Peripheral<P=impl TxPin<USART1>> + 'static,
         rx: impl Peripheral<P=impl RxPin<USART1>> + 'static,
         base: UartBase<USART1>,
-        tx_dma: impl Peripheral<P=TxDma> + 'static,
-        rx_dma: impl Peripheral<P=RxDma> + 'static,
+        tx_dma: impl Peripheral<P=impl TxDma<USART1>> + 'static,
+        rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static,
         rts_cts: Option<(PA12, PA11)>)
-        -> Result<Uart<'static, USART1, TxDma, RxDma>, ConfigError> {
+        -> Result<Uart<'static, Async>, ConfigError> {
         let (rts, cts) = crate::match_some_return!(rts_cts,
             Uart::new(base.uart, rx, tx, Irqs, tx_dma, rx_dma, base.config.unwrap_or_default()));
         Uart::new_with_rtscts(base.uart, rx, tx, Irqs, rts, cts, tx_dma, rx_dma, base.config.unwrap_or_default())
