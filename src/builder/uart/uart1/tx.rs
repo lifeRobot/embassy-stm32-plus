@@ -22,7 +22,9 @@ pub struct Uart1TxBuilder {
 
 /// custom method
 impl Uart1TxBuilder {
-    /// create builder
+    /// create builder<br />
+    /// default baud_rate=115200,data_bits=8,stop_bits=1,parity=None<br />
+    /// set config see [Self::config], default config see [Config::default]
     #[inline]
     pub fn new(uart: USART1, tx: Uart1Tx) -> Self {
         Self { base: UartBase::new(uart), tx, cts: None }
@@ -43,13 +45,7 @@ impl Uart1TxBuilder {
     }
 
     /// build uart tx that supports write data
-    #[inline]
     pub fn build(self, tx_dma: DMA1_CH4) -> Result<UartTx<'static, Async>, ConfigError> {
-        self.build_tx(tx_dma)
-    }
-
-    /// build by tx
-    fn build_tx(self, tx_dma: DMA1_CH4) -> Result<UartTx<'static, Async>, ConfigError> {
         match self.tx {
             Uart1Tx::PA9(pa9) => { Self::build_cts(pa9, tx_dma, self.base, self.cts) }
             Uart1Tx::PB6(pb6) => { Self::build_cts(pb6, tx_dma, self.base, self.cts) }

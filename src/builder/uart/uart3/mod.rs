@@ -1,7 +1,7 @@
 use embassy_stm32::{bind_interrupts, Peripheral, usart};
 use embassy_stm32::mode::Async;
 use embassy_stm32::peripherals::{DMA1_CH2, DMA1_CH3, USART3};
-use embassy_stm32::usart::{Config, ConfigError, RtsPin, RxDma, RxPin, TxDma, TxPin, Uart};
+use embassy_stm32::usart::{Config, ConfigError, RtsPin, RxPin, TxPin, Uart};
 use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart3::rx::{Uart3Rts, Uart3Rx, Uart3RxBuilder};
 use crate::builder::uart::uart3::tx::{Uart3Cts, Uart3Tx};
@@ -47,39 +47,14 @@ impl Uart3Builder {
         self
     }
 
-    /*/// can not read and write
-    #[inline]
-    pub fn build_disable(self) -> Result<Uart<'static, Async>, ConfigError> {
-        self.build_tx(NoDma, NoDma)
-    }
-
-    /// build a serial port that only supports read data
-    #[inline]
-    pub fn build_read(self, read_dma: DMA1_CH3) -> Result<Uart<'static, Async>, ConfigError> {
-        self.build_tx(NoDma, read_dma)
-    }
-
-    /// build a serial port that only supports write data
-    #[inline]
-    pub fn build_write(self, write_dma: DMA1_CH2) -> Result<Uart<'static, Async>, ConfigError> {
-        self.build_tx(write_dma, NoDma)
-    }*/
-
     /// build a serial port that supports read and write data
-    #[inline]
-    pub fn build_all(self, write_dma: DMA1_CH2, read_dma: DMA1_CH3)
-                     -> Result<Uart<'static, Async>, ConfigError> {
-        self.build_tx(write_dma, read_dma)
-    }
-
-    /// build by tx
-    fn build_tx(self, tx_dma: impl Peripheral<P=impl TxDma<USART3>> + 'static, rx_dma: impl Peripheral<P=impl RxDma<USART3>> + 'static)
-                -> Result<Uart<'static, Async>, ConfigError> {
+    pub fn build(self, tx_dma: DMA1_CH2, rx_dma: DMA1_CH3) -> Result<Uart<'static, Async>, ConfigError> {
         let rx = Uart3RxBuilder { base: self.base, rx: self.rx, rts: None };
         match self.tx {
             Uart3Tx::PB10(pb10) => { Self::build_rx(pb10, rx, tx_dma, rx_dma, self.rts_cts) }
+            #[cfg(PC10)]
             Uart3Tx::PC10(pc10) => { Self::build_rx(pc10, rx, tx_dma, rx_dma, self.rts_cts) }
-            #[cfg(any(feature = "pin_100", feature = "pin_144"))]
+            #[cfg(PD8)]
             Uart3Tx::PD8(pd8) => { Self::build_rx(pd8, rx, tx_dma, rx_dma, self.rts_cts) }
         }
     }
@@ -88,14 +63,15 @@ impl Uart3Builder {
     fn build_rx(
         tx: impl Peripheral<P=impl TxPin<USART3>> + 'static,
         rx: Uart3RxBuilder,
-        tx_dma: impl Peripheral<P=impl TxDma<USART3>> + 'static,
-        rx_dma: impl Peripheral<P=impl RxDma<USART3>> + 'static,
+        tx_dma: DMA1_CH2,
+        rx_dma: DMA1_CH3,
         rts_cts: Option<(Uart3Rts, Uart3Cts)>)
         -> Result<Uart<'static, Async>, ConfigError> {
         match rx.rx {
             Uart3Rx::PB11(pb11) => { Self::build_rts(tx, pb11, rx.base, tx_dma, rx_dma, rts_cts) }
+            #[cfg(PC11)]
             Uart3Rx::PC11(pc11) => { Self::build_rts(tx, pc11, rx.base, tx_dma, rx_dma, rts_cts) }
-            #[cfg(any(feature = "pin_100", feature = "pin_144"))]
+            #[cfg(PD9)]
             Uart3Rx::PD9(pd9) => { Self::build_rts(tx, pd9, rx.base, tx_dma, rx_dma, rts_cts) }
         }
     }
@@ -105,8 +81,8 @@ impl Uart3Builder {
         tx: impl Peripheral<P=impl TxPin<USART3>> + 'static,
         rx: impl Peripheral<P=impl RxPin<USART3>> + 'static,
         base: UartBase<USART3>,
-        tx_dma: impl Peripheral<P=impl TxDma<USART3>> + 'static,
-        rx_dma: impl Peripheral<P=impl RxDma<USART3>> + 'static,
+        tx_dma: DMA1_CH2,
+        rx_dma: DMA1_CH3,
         rts_cts: Option<(Uart3Rts, Uart3Cts)>)
         -> Result<Uart<'static, Async>, ConfigError> {
         let (rts, cts) = crate::match_some_return!(rts_cts,
@@ -114,7 +90,7 @@ impl Uart3Builder {
 
         match rts {
             Uart3Rts::PB14(pb14) => { Self::build_cts(tx, rx, base, tx_dma, rx_dma, pb14, cts) }
-            #[cfg(any(feature = "pin_100", feature = "pin_144"))]
+            #[cfg(PD12)]
             Uart3Rts::PD12(pd12) => { Self::build_cts(tx, rx, base, tx_dma, rx_dma, pd12, cts) }
         }
     }
@@ -124,8 +100,8 @@ impl Uart3Builder {
         tx: impl Peripheral<P=impl TxPin<USART3>> + 'static,
         rx: impl Peripheral<P=impl RxPin<USART3>> + 'static,
         base: UartBase<USART3>,
-        tx_dma: impl Peripheral<P=impl TxDma<USART3>> + 'static,
-        rx_dma: impl Peripheral<P=impl RxDma<USART3>> + 'static,
+        tx_dma: DMA1_CH2,
+        rx_dma: DMA1_CH3,
         rts: impl Peripheral<P=impl RtsPin<USART3>> + 'static,
         cts: Uart3Cts)
         -> Result<Uart<'static, Async>, ConfigError> {
@@ -133,7 +109,7 @@ impl Uart3Builder {
             Uart3Cts::PB13(pb13) => {
                 Uart::new_with_rtscts(base.uart, rx, tx, Irqs, rts, pb13, tx_dma, rx_dma, base.config.unwrap_or_default())
             }
-            #[cfg(any(feature = "pin_100", feature = "pin_144"))]
+            #[cfg(PD11)]
             Uart3Cts::PD11(pd11) => {
                 Uart::new_with_rtscts(base.uart, rx, tx, Irqs, rts, pd11, tx_dma, rx_dma, base.config.unwrap_or_default())
             }

@@ -1,7 +1,7 @@
 use embassy_stm32::{bind_interrupts, Peripheral, usart};
 use embassy_stm32::mode::Async;
 use embassy_stm32::peripherals::{DMA1_CH4, DMA1_CH5, PA11, PA12, USART1};
-use embassy_stm32::usart::{Config, ConfigError, RxDma, RxPin, TxDma, TxPin, Uart};
+use embassy_stm32::usart::{Config, ConfigError, RxPin, TxPin, Uart};
 use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart1::rx::{Uart1Rx, Uart1RxBuilder};
 use crate::builder::uart::uart1::tx::Uart1Tx;
@@ -48,13 +48,7 @@ impl Uart1Builder {
     }
 
     /// build a serial port that supports read and write data
-    #[inline]
-    pub fn build(self, write_dma: DMA1_CH4, read_dma: DMA1_CH5) -> Result<Uart<'static, Async>, ConfigError> {
-        self.build_tx(write_dma, read_dma)
-    }
-
-    /// build by tx
-    fn build_tx(self, tx_dma: impl Peripheral<P=impl TxDma<USART1>> + 'static, rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static) -> Result<Uart<'static, Async>, ConfigError> {
+    pub fn build(self, tx_dma: DMA1_CH4, rx_dma: DMA1_CH5) -> Result<Uart<'static, Async>, ConfigError> {
         let rx = Uart1RxBuilder { base: self.base, rx: self.rx, rts: None };
         match self.tx {
             Uart1Tx::PA9(pa9) => { Self::build_rx(pa9, rx, tx_dma, rx_dma, self.rts_cts) }
@@ -66,8 +60,8 @@ impl Uart1Builder {
     fn build_rx(
         tx: impl Peripheral<P=impl TxPin<USART1>> + 'static,
         rx: Uart1RxBuilder,
-        tx_dma: impl Peripheral<P=impl TxDma<USART1>> + 'static,
-        rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static,
+        tx_dma: DMA1_CH4,
+        rx_dma: DMA1_CH5,
         rts_cts: Option<(PA12, PA11)>)
         -> Result<Uart<'static, Async>, ConfigError> {
         match rx.rx {
@@ -81,8 +75,8 @@ impl Uart1Builder {
         tx: impl Peripheral<P=impl TxPin<USART1>> + 'static,
         rx: impl Peripheral<P=impl RxPin<USART1>> + 'static,
         base: UartBase<USART1>,
-        tx_dma: impl Peripheral<P=impl TxDma<USART1>> + 'static,
-        rx_dma: impl Peripheral<P=impl RxDma<USART1>> + 'static,
+        tx_dma: DMA1_CH4,
+        rx_dma: DMA1_CH5,
         rts_cts: Option<(PA12, PA11)>)
         -> Result<Uart<'static, Async>, ConfigError> {
         let (rts, cts) = crate::match_some_return!(rts_cts,
