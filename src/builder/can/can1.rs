@@ -4,7 +4,11 @@ use embassy_stm32::can::{Can, TxPin};
 use embassy_stm32::peripherals::CAN;
 #[cfg(CAN1)]
 use embassy_stm32::peripherals::CAN1;
-use embassy_stm32::peripherals::{PA11, PA12, PB8, PB9};
+use embassy_stm32::peripherals::{PA11, PA12};
+#[cfg(PB8)]
+use embassy_stm32::peripherals::PB8;
+#[cfg(PB9)]
+use embassy_stm32::peripherals::PB9;
 #[cfg(any(CAN_PD0, CAN1_PD0))]
 use embassy_stm32::peripherals::PD0;
 #[cfg(any(CAN_PD1, CAN1_PD1))]
@@ -29,6 +33,7 @@ bind_interrupts!(pub struct Irqs {
 /// can1 rx pin
 pub enum Can1Rx {
     PA11(PA11),
+    #[cfg(PB8)]
     PB8(PB8),
     #[cfg(any(CAN_PD0, CAN1_PD0))]
     PD0(PD0),
@@ -37,6 +42,7 @@ pub enum Can1Rx {
 /// can1 tx pin
 pub enum Can1Tx {
     PA12(PA12),
+    #[cfg(PB9)]
     PB9(PB9),
     #[cfg(any(CAN_PD1, CAN1_PD1))]
     PD1(PD1),
@@ -62,6 +68,7 @@ macro_rules! build_rx_fn {
         fn build_rx(can: $can, tx: impl Peripheral<P=impl TxPin<$can>> + 'static, rx: Can1Rx) -> Can<'static> {
             match rx {
                 Can1Rx::PA11(pa11) => { Can::new(can, pa11, tx, Irqs) }
+                #[cfg(PB8)]
                 Can1Rx::PB8(pb8) => { Can::new(can, pb8, tx, Irqs) }
                 #[cfg(any(CAN_PD0, CAN1_PD0))]
                 Can1Rx::PD0(pd0) => { Can::new(can, pd0, tx, Irqs) }
@@ -90,6 +97,7 @@ impl Can1Builder {
     pub fn build(self) -> Can<'static> {
         match self.tx {
             Can1Tx::PA12(pa12) => { Self::build_rx(self.can, pa12, self.rx) }
+            #[cfg(PB9)]
             Can1Tx::PB9(pb9) => { Self::build_rx(self.can, pb9, self.rx) }
             #[cfg(any(CAN_PD1, CAN1_PD1))]
             Can1Tx::PD1(pd1) => { Self::build_rx(self.can, pd1, self.rx) }

@@ -1,49 +1,18 @@
-#[cfg(any(ADC1, ADC2))]
+#[cfg(any(ADC1, ADC2, ADC3))]
 pub mod adc;
 #[cfg(any(CAN, CAN1, CAN2))]
 pub mod can;
-#[cfg(not(feature = "stm32l0"))]
+#[cfg(CRC)]
 pub mod crc;
-/*#[cfg(not(any(
-    feature = "stm32f103vb",
-    feature = "stm32f103v8",
-    feature = "stm32f103tb",
-    feature = "stm32f103t8",
-    feature = "stm32f103t6",
-    feature = "stm32f103t4",
-    feature = "stm32f103rb",
-    feature = "stm32f103r8",
-    feature = "stm32f103r6",
-    feature = "stm32f103r4",
-    feature = "stm32f103cb",
-    feature = "stm32f103c8",
-    feature = "stm32f103c6",
-    feature = "stm32f103c4",
-    feature = "stm32f102",
-    feature = "stm32f101vb",
-    feature = "stm32f101v8",
-    feature = "stm32f101rb",
-    feature = "stm32f101r8",
-    feature = "stm32f101r6",
-    feature = "stm32f101r4",
-    feature = "stm32f101cb",
-    feature = "stm32f101c8",
-    feature = "stm32f101c6",
-    feature = "stm32f101c4",
-    feature = "stm32f101tb",
-    feature = "stm32f101t8",
-    feature = "stm32f101t6",
-    feature = "stm32f101t4",
-    feature = "stm32l0"
-)))]
-pub mod dac;*/
-#[cfg(not(feature = "stm32l0"))]
+#[cfg(DAC1)]
+pub mod dac;
+#[cfg(ETH)]
 pub mod eth;
 pub mod flash;
 pub mod gpio;
 // pub mod i2c;
 // pub mod spi;
-#[cfg(any(USART1, USART2, USART3))]
+#[cfg(any(USART1, USART2, USART3, UART4, UART5))]
 pub mod uart;
 pub mod uid;
 #[cfg(feature = "embassy-usb")]

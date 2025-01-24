@@ -1,41 +1,34 @@
-use embassy_stm32::dac::{Dac, DacCh1, DacCh2, Instance};
-use embassy_stm32::dma::NoDma;
-use embassy_stm32::Peripheral;
-use embassy_stm32::peripherals::{DAC, PA4, PA5};
+use embassy_stm32::peripherals::{DAC1, PA4, PA5};
+use crate::builder::dac::ch1::DacCh1Builder;
+use crate::builder::dac::ch2::DacCh2Builder;
+use crate::builder::dac::DacBuilder;
 
 /// dac trait
-pub trait DacTrait<CH1, CH2>: Peripheral + Instance {
-    fn build_ch_with_dma<DmaCh1, DmaCh2>(self, ch1: CH1, ch2: CH2, dma_ch1: impl Peripheral<P=DmaCh1> + 'static, dma_ch2: impl Peripheral<P=DmaCh2> + 'static) -> Dac<'static, Self, DmaCh1, DmaCh2>;
+pub trait DacTrait {
+    /// create dac builder
+    fn builder(self, ch1_pin: PA4, ch2_pin: PA5) -> DacBuilder;
 
-    fn build_ch1_with_dma<DmaCh1>(self, ch1: CH1, dma_ch1: impl Peripheral<P=DmaCh1> + 'static) -> DacCh1<'static, Self, DmaCh1>;
+    /// create dac ch1 builder
+    fn ch1_builder(self, ch1_pin: PA4) -> DacCh1Builder;
 
-    fn build_ch2_with_dma<DmaCh2>(self, ch2: CH2, dma_ch2: impl Peripheral<P=DmaCh2> + 'static) -> DacCh2<'static, Self, DmaCh2>;
-
-    fn build_ch(self, ch1: CH1, ch2: CH2) -> Dac<'static, Self> {
-        self.build_ch_with_dma(ch1, ch2, NoDma, NoDma)
-    }
-
-    fn build_ch1(self, ch1: CH1) -> DacCh1<'static, Self> {
-        self.build_ch1_with_dma(ch1, NoDma)
-    }
-
-    fn build_ch2(self, ch2: CH2) -> DacCh2<'static, Self> {
-        self.build_ch2_with_dma(ch2, NoDma)
-    }
+    /// create dac ch2 builder
+    fn ch2_builder(self, ch2_pin: PA5) -> DacCh2Builder;
 }
 
-/// support DAC
-impl DacTrait<PA4, PA5> for DAC {
-    fn build_ch_with_dma<DmaCh1, DmaCh2>(self, ch1: PA4, ch2: PA5, dma_ch1: impl Peripheral<P=DmaCh1> + 'static, dma_ch2: impl Peripheral<P=DmaCh2> + 'static) -> Dac<'static, Self, DmaCh1, DmaCh2> {
-        Dac::new(self, dma_ch1, dma_ch2, ch1, ch2)
+/// dac support dac trait
+impl DacTrait for DAC1 {
+    #[inline]
+    fn builder(self, ch1_pin: PA4, ch2_pin: PA5) -> DacBuilder {
+        DacBuilder::new(self, ch1_pin, ch2_pin)
     }
 
-    fn build_ch1_with_dma<DmaCh1>(self, ch1: PA4, dma_ch1: impl Peripheral<P=DmaCh1> + 'static) -> DacCh1<'static, Self, DmaCh1> {
-        DacCh1::new(self, dma_ch1, ch1)
+    #[inline]
+    fn ch1_builder(self, ch1_pin: PA4) -> DacCh1Builder {
+        DacCh1Builder::new(self, ch1_pin)
     }
 
-    fn build_ch2_with_dma<DmaCh2>(self, ch2: PA5, dma_ch2: impl Peripheral<P=DmaCh2> + 'static) -> DacCh2<'static, Self, DmaCh2> {
-        DacCh2::new(self, dma_ch2, ch2)
+    #[inline]
+    fn ch2_builder(self, ch2_pin: PA5) -> DacCh2Builder {
+        DacCh2Builder::new(self, ch2_pin)
     }
 }
-
