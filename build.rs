@@ -5,7 +5,8 @@ pub fn main() {
         "PD3", "PD4", "PD5", "PD6", "PD8", "PD9", "PD10", "PD11", "PD12",
         "ADC1", "ADC2", "ADC3", "DAC", "DAC1",
         "CAN", "CAN1", "CAN2", "CAN_PD0", "CAN_PD1", "CAN1_PD0", "CAN1_PD1", "CRC",
-        "ETH", "USART1", "USART2", "USART3", "UART4", "UART5"]
+        "ETH", "I2C1", "I2C2", "SPI1", "SPI2", "SPI3",
+        "USART1", "USART2", "USART3", "UART4", "UART5"]
         .join(",");
     println!("cargo:rustc-check-cfg=cfg({ignore})");
 

@@ -1,1 +1,0 @@
-crate::impl_can_64!();

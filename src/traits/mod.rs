@@ -10,8 +10,10 @@ pub mod dac;
 pub mod eth;
 pub mod flash;
 pub mod gpio;
-// pub mod i2c;
-// pub mod spi;
+#[cfg(any(I2C1, I2C2))]
+pub mod i2c;
+#[cfg(any(SPI1, SPI2, SPI3))]
+pub mod spi;
 #[cfg(any(USART1, USART2, USART3, UART4, UART5))]
 pub mod uart;
 pub mod uid;

@@ -1,3 +1,4 @@
+pub mod base;
 #[cfg(SPI1)]
 pub mod spi1;
 #[cfg(SPI2)]

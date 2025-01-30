@@ -6,3 +6,7 @@ pub mod can;
 pub mod dac;
 #[cfg(ETH)]
 pub mod eth;
+#[cfg(any(I2C1, I2C2))]
+pub mod i2c;
+#[cfg(any(SPI1, SPI2, SPI3))]
+pub mod spi;
