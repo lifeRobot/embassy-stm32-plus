@@ -17,6 +17,6 @@ pub mod spi;
 #[cfg(any(USART1, USART2, USART3, UART4, UART5))]
 pub mod uart;
 pub mod uid;
-#[cfg(feature = "embassy-usb")]
+#[cfg(any(USB, USB_OTG_FS))]
 pub mod usb;
 pub mod wdg;

@@ -10,3 +10,5 @@ pub mod eth;
 pub mod i2c;
 #[cfg(any(SPI1, SPI2, SPI3))]
 pub mod spi;
+#[cfg(any(USB, USB_OTG_FS))]
+pub mod usb;
