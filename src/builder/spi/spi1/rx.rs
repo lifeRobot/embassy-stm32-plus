@@ -1,14 +1,28 @@
 use embassy_stm32::mode::{Async, Blocking};
 use embassy_stm32::Peripheral;
-use embassy_stm32::peripherals::{DMA1_CH2, DMA1_CH3, PA6, PB4, SPI1};
+use embassy_stm32::peripherals::{DMA1_CH2, DMA1_CH3, SPI1};
+#[cfg(SPI1_PA11)]
+use embassy_stm32::peripherals::PA11;
+#[cfg(SPI1_PA6)]
+use embassy_stm32::peripherals::PA6;
+#[cfg(SPI1_PB4)]
+use embassy_stm32::peripherals::PB4;
+#[cfg(SPI1_PB6)]
+use embassy_stm32::peripherals::PB6;
 use embassy_stm32::spi::{Config, SckPin, Spi};
 use crate::builder::spi::base::SpiBase;
 use crate::builder::spi::spi1::Spi1Sck;
 
 /// spi1 miso pin
 pub enum Spi1Miso {
+    #[cfg(SPI1_PA6)]
     PA6(PA6),
+    #[cfg(SPI1_PA11)]
+    PA11(PA11),
+    #[cfg(SPI1_PB4)]
     PB4(PB4),
+    #[cfg(SPI1_PB6)]
+    PB6(PB6),
 }
 
 /// spi1 rx builder
@@ -42,8 +56,14 @@ impl Spi1RxBuilder {
     pub fn build(self, tx_dma: DMA1_CH3, rx_dma: DMA1_CH2) -> Spi<'static, Async> {
         let Self { base, sck, miso } = self;
         match sck {
+            #[cfg(SPI1_PA1)]
+            Spi1Sck::PA1(pa1) => { Self::build_miso(base, pa1, miso, tx_dma, rx_dma) }
+            #[cfg(SPI1_PA5)]
             Spi1Sck::PA5(pa5) => { Self::build_miso(base, pa5, miso, tx_dma, rx_dma) }
+            #[cfg(SPI1_PB3)]
             Spi1Sck::PB3(pb3) => { Self::build_miso(base, pb3, miso, tx_dma, rx_dma) }
+            #[cfg(SPI1_PB6)]
+            Spi1Sck::PB6(pb6) => { Self::build_miso(base, pb6, miso, tx_dma, rx_dma) }
         }
     }
 
@@ -55,12 +75,14 @@ impl Spi1RxBuilder {
         tx_dma: DMA1_CH3,
         rx_dma: DMA1_CH2) -> Spi<'static, Async> {
         match miso {
-            Spi1Miso::PA6(pa6) => {
-                Spi::new_rxonly(base.spi, sck, pa6, tx_dma, rx_dma, base.config.unwrap_or_default())
-            }
-            Spi1Miso::PB4(pb4) => {
-                Spi::new_rxonly(base.spi, sck, pb4, tx_dma, rx_dma, base.config.unwrap_or_default())
-            }
+            #[cfg(SPI1_PA6)]
+            Spi1Miso::PA6(pa6) => { Spi::new_rxonly(base.spi, sck, pa6, tx_dma, rx_dma, base.config.unwrap_or_default()) }
+            #[cfg(SPI1_PA11)]
+            Spi1Miso::PA11(pa11) => { Spi::new_rxonly(base.spi, sck, pa11, tx_dma, rx_dma, base.config.unwrap_or_default()) }
+            #[cfg(SPI1_PB4)]
+            Spi1Miso::PB4(pb4) => { Spi::new_rxonly(base.spi, sck, pb4, tx_dma, rx_dma, base.config.unwrap_or_default()) }
+            #[cfg(SPI1_PB6)]
+            Spi1Miso::PB6(pb6) => { Spi::new_rxonly(base.spi, sck, pb6, tx_dma, rx_dma, base.config.unwrap_or_default()) }
         }
     }
 
@@ -70,8 +92,14 @@ impl Spi1RxBuilder {
     pub fn build_blocking(self) -> Spi<'static, Blocking> {
         let Self { base, sck, miso } = self;
         match sck {
+            #[cfg(SPI1_PA1)]
+            Spi1Sck::PA1(pa1) => { Self::build_blocking_miso(base, pa1, miso) }
+            #[cfg(SPI1_PA5)]
             Spi1Sck::PA5(pa5) => { Self::build_blocking_miso(base, pa5, miso) }
+            #[cfg(SPI1_PB3)]
             Spi1Sck::PB3(pb3) => { Self::build_blocking_miso(base, pb3, miso) }
+            #[cfg(SPI1_PB6)]
+            Spi1Sck::PB6(pb6) => { Self::build_blocking_miso(base, pb6, miso) }
         }
     }
 
@@ -81,8 +109,14 @@ impl Spi1RxBuilder {
         sck: impl Peripheral<P=impl SckPin<SPI1>> + 'static,
         miso: Spi1Miso) -> Spi<'static, Blocking> {
         match miso {
+            #[cfg(SPI1_PA6)]
             Spi1Miso::PA6(pa6) => { Spi::new_blocking_rxonly(base.spi, sck, pa6, base.config.unwrap_or_default()) }
+            #[cfg(SPI1_PA11)]
+            Spi1Miso::PA11(pa11) => { Spi::new_blocking_rxonly(base.spi, sck, pa11, base.config.unwrap_or_default()) }
+            #[cfg(SPI1_PB4)]
             Spi1Miso::PB4(pb4) => { Spi::new_blocking_rxonly(base.spi, sck, pb4, base.config.unwrap_or_default()) }
+            #[cfg(SPI1_PB6)]
+            Spi1Miso::PB6(pb6) => { Spi::new_blocking_rxonly(base.spi, sck, pb6, base.config.unwrap_or_default()) }
         }
     }
 }

@@ -19,6 +19,9 @@ stm32-metapac = { version = "16.0.0", default-features = false }
 [features]
 # support exti, used to support W5500 and etc
 exti = ["embassy-stm32/exti"]
+# stm32c0x1 13
+stm32c011j4 = ["embassy-stm32/stm32c011j4", "stm32-metapac/stm32c011j4"]
+# stm32f100 19
 stm32f100c4 = ["embassy-stm32/stm32f100c4", "stm32-metapac/stm32f100c4"]
 stm32f100c6 = ["embassy-stm32/stm32f100c6", "stm32-metapac/stm32f100c6"]
 stm32f100c8 = ["embassy-stm32/stm32f100c8", "stm32-metapac/stm32f100c8"]
@@ -38,6 +41,7 @@ stm32f100ve = ["embassy-stm32/stm32f100ve", "stm32-metapac/stm32f100ve"]
 stm32f100zc = ["embassy-stm32/stm32f100zc", "stm32-metapac/stm32f100zc"]
 stm32f100zd = ["embassy-stm32/stm32f100zd", "stm32-metapac/stm32f100zd"]
 stm32f100ze = ["embassy-stm32/stm32f100ze", "stm32-metapac/stm32f100ze"]
+# stm32f101 29
 stm32f101t4 = ["embassy-stm32/stm32f101t4", "stm32-metapac/stm32f101t4"]
 stm32f101t6 = ["embassy-stm32/stm32f101t6", "stm32-metapac/stm32f101t6"]
 stm32f101t8 = ["embassy-stm32/stm32f101t8", "stm32-metapac/stm32f101t8"]
@@ -67,6 +71,7 @@ stm32f101zd = ["embassy-stm32/stm32f101zd", "stm32-metapac/stm32f101zd"]
 stm32f101ze = ["embassy-stm32/stm32f101ze", "stm32-metapac/stm32f101ze"]
 stm32f101zf = ["embassy-stm32/stm32f101zf", "stm32-metapac/stm32f101zf"]
 stm32f101zg = ["embassy-stm32/stm32f101zg", "stm32-metapac/stm32f101zg"]
+# stm32f102 8
 stm32f102c4 = ["embassy-stm32/stm32f102c4", "stm32-metapac/stm32f102c4", "embassy-usb"]
 stm32f102c6 = ["embassy-stm32/stm32f102c6", "stm32-metapac/stm32f102c6", "embassy-usb"]
 stm32f102c8 = ["embassy-stm32/stm32f102c8", "stm32-metapac/stm32f102c8", "embassy-usb"]
@@ -75,6 +80,7 @@ stm32f102r4 = ["embassy-stm32/stm32f102r4", "stm32-metapac/stm32f102r4", "embass
 stm32f102r6 = ["embassy-stm32/stm32f102r6", "stm32-metapac/stm32f102r6", "embassy-usb"]
 stm32f102r8 = ["embassy-stm32/stm32f102r8", "stm32-metapac/stm32f102r8", "embassy-usb"]
 stm32f102rb = ["embassy-stm32/stm32f102rb", "stm32-metapac/stm32f102rb", "embassy-usb"]
+# stm32f103 29
 stm32f103t4 = ["embassy-stm32/stm32f103t4", "stm32-metapac/stm32f103t4", "embassy-usb"]
 stm32f103t6 = ["embassy-stm32/stm32f103t6", "stm32-metapac/stm32f103t6", "embassy-usb"]
 stm32f103t8 = ["embassy-stm32/stm32f103t8", "stm32-metapac/stm32f103t8", "embassy-usb"]
@@ -104,14 +110,16 @@ stm32f103zd = ["embassy-stm32/stm32f103zd", "stm32-metapac/stm32f103zd", "embass
 stm32f103ze = ["embassy-stm32/stm32f103ze", "stm32-metapac/stm32f103ze", "embassy-usb"]
 stm32f103zf = ["embassy-stm32/stm32f103zf", "stm32-metapac/stm32f103zf", "embassy-usb"]
 stm32f103zg = ["embassy-stm32/stm32f103zg", "stm32-metapac/stm32f103zg", "embassy-usb"]
+# stm32f105 6
 stm32f105r8 = ["embassy-stm32/stm32f105r8", "stm32-metapac/stm32f105r8", "embassy-usb"]
 stm32f105rb = ["embassy-stm32/stm32f105rb", "stm32-metapac/stm32f105rb", "embassy-usb"]
 stm32f105rc = ["embassy-stm32/stm32f105rc", "stm32-metapac/stm32f105rc", "embassy-usb"]
 stm32f105v8 = ["embassy-stm32/stm32f105v8", "stm32-metapac/stm32f105v8", "embassy-usb"]
 stm32f105vb = ["embassy-stm32/stm32f105vb", "stm32-metapac/stm32f105vb", "embassy-usb"]
 stm32f105vc = ["embassy-stm32/stm32f105vc", "stm32-metapac/stm32f105vc", "embassy-usb"]
+# stm32f107 4
 stm32f107rb = ["embassy-stm32/stm32f107rb", "stm32-metapac/stm32f107rb", "embassy-usb"]
 stm32f107rc = ["embassy-stm32/stm32f107rc", "stm32-metapac/stm32f107rc", "embassy-usb"]
 stm32f107vb = ["embassy-stm32/stm32f107vb", "stm32-metapac/stm32f107vb", "embassy-usb"]
 stm32f107vc = ["embassy-stm32/stm32f107vc", "stm32-metapac/stm32f107vc", "embassy-usb"]
-stm32l010c6 = ["embassy-stm32/stm32l010c6", "stm32-metapac/stm32l010c6"]
+# stm32l010c6 = ["embassy-stm32/stm32l010c6", "stm32-metapac/stm32l010c6"]

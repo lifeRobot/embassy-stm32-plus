@@ -1,4 +1,4 @@
-#[cfg(any(ADC1, ADC2, ADC3))]
+#[cfg(all(any(ADC1, ADC2, ADC3), not(any(feature = "stm32c011j4"))))]
 pub mod adc;
 #[cfg(any(CAN, CAN1, CAN2))]
 pub mod can;

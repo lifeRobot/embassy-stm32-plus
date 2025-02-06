@@ -1,6 +1,10 @@
 use crate::builder::uart::base::UartBase;
 use embassy_stm32::mode::Async;
-use embassy_stm32::peripherals::{DMA1_CH7, PA0, PA2, USART2};
+#[cfg(not(STM32C0))]
+use embassy_stm32::peripherals::DMA1_CH7;
+#[cfg(STM32C0)]
+use embassy_stm32::peripherals::DMA1_CH1;
+use embassy_stm32::peripherals::{PA0, PA2, USART2};
 #[cfg(PD3)]
 use embassy_stm32::peripherals::PD3;
 #[cfg(PD5)]
@@ -32,6 +36,37 @@ pub struct Uart2TxBuilder {
     pub cts: Option<Uart2Cts>,
 }
 
+/// uart2 tx build
+macro_rules! uart2_tx_build {
+    ($tx_dma:ty) => {
+        /// build uart tx that supports write data
+        pub fn build(self, tx_dma: $tx_dma) -> Result<UartTx<'static, Async>, ConfigError> {
+            match self.tx {
+                Uart2Tx::PA2(pa2) => Self::build_cts(pa2, tx_dma, self.base, self.cts),
+                #[cfg(PD5)]
+                Uart2Tx::PD5(pa5) => Self::build_cts(pa5, tx_dma, self.base, self.cts),
+            }
+        }
+
+        /// build by cts
+        fn build_cts(
+            tx: impl Peripheral<P=impl TxPin<USART2>> + 'static,
+            tx_dma: $tx_dma,
+            base: UartBase<USART2>,
+            cts: Option<Uart2Cts>)
+            -> Result<UartTx<'static, Async>, ConfigError> {
+            let cts = crate::match_some_return!(cts,
+                UartTx::new(base.uart, tx, tx_dma, base.config.unwrap_or_default()));
+
+            match cts {
+                Uart2Cts::PA0(pa0) => { UartTx::new_with_cts(base.uart, tx, pa0, tx_dma, base.config.unwrap_or_default()) }
+                #[cfg(PD3)]
+                Uart2Cts::PD3(pd3) => { UartTx::new_with_cts(base.uart, tx, pd3, tx_dma, base.config.unwrap_or_default()) }
+            }
+        }
+    };
+}
+
 /// custom method
 impl Uart2TxBuilder {
     /// create builder
@@ -54,7 +89,11 @@ impl Uart2TxBuilder {
         self
     }
 
-    /// build uart tx that supports write data
+    #[cfg(STM32C0)]
+    uart2_tx_build!(DMA1_CH1);
+    #[cfg(not(STM32C0))]
+    uart2_tx_build!(DMA1_CH7);
+    /*/// build uart tx that supports write data
     pub fn build(self, tx_dma: DMA1_CH7) -> Result<UartTx<'static, Async>, ConfigError> {
         match self.tx {
             Uart2Tx::PA2(pa2) => Self::build_cts(pa2, tx_dma, self.base, self.cts),
@@ -78,5 +117,5 @@ impl Uart2TxBuilder {
             #[cfg(PD3)]
             Uart2Cts::PD3(pd3) => { UartTx::new_with_cts(base.uart, tx, pd3, tx_dma, base.config.unwrap_or_default()) }
         }
-    }
+    }*/
 }
