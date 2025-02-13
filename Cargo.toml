@@ -21,6 +21,14 @@ stm32-metapac = { version = "16.0.0", default-features = false }
 exti = ["embassy-stm32/exti"]
 # stm32c0x1 13
 stm32c011j4 = ["embassy-stm32/stm32c011j4", "stm32-metapac/stm32c011j4"]
+stm32c011j6 = ["embassy-stm32/stm32c011j6", "stm32-metapac/stm32c011j6"]
+stm32c011d6 = ["embassy-stm32/stm32c011d6", "stm32-metapac/stm32c011d6"]
+stm32c011f4 = ["embassy-stm32/stm32c011f4", "stm32-metapac/stm32c011f4"]
+stm32c011f6 = ["embassy-stm32/stm32c011f6", "stm32-metapac/stm32c011f6"]
+stm32c031f4 = ["embassy-stm32/stm32c031f4", "stm32-metapac/stm32c031f4"]
+stm32c031f6 = ["embassy-stm32/stm32c031f6", "stm32-metapac/stm32c031f6"]
+stm32c031g4 = ["embassy-stm32/stm32c031g4", "stm32-metapac/stm32c031g4"]
+stm32c031g6 = ["embassy-stm32/stm32c031g6", "stm32-metapac/stm32c031g6"]
 # stm32f100 19
 stm32f100c4 = ["embassy-stm32/stm32f100c4", "stm32-metapac/stm32f100c4"]
 stm32f100c6 = ["embassy-stm32/stm32f100c6", "stm32-metapac/stm32f100c6"]

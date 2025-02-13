@@ -2,8 +2,6 @@ use embassy_stm32::mode::Async;
 use embassy_stm32::Peripheral;
 #[cfg(not(STM32C0))]
 use embassy_stm32::peripherals::DMA1_CH6;
-#[cfg(STM32C0)]
-use embassy_stm32::peripherals::DMA1_CH1;
 use embassy_stm32::peripherals::{PA1, USART2};
 #[cfg(USART2_PA3)]
 use embassy_stm32::peripherals::PA3;
@@ -13,11 +11,19 @@ use embassy_stm32::peripherals::PA5;
 use embassy_stm32::peripherals::PA13;
 #[cfg(USART2_PA14)]
 use embassy_stm32::peripherals::PA14;
+#[cfg(USART2_PA15)]
+use embassy_stm32::peripherals::PA15;
+#[cfg(USART2_PB9)]
+use embassy_stm32::peripherals::PB9;
+#[cfg(USART2_PC14)]
+use embassy_stm32::peripherals::PC14;
 #[cfg(USART2_PD4)]
 use embassy_stm32::peripherals::PD4;
 #[cfg(USART2_PD6)]
 use embassy_stm32::peripherals::PD6;
 use embassy_stm32::usart::{Config, ConfigError, RxPin, UartRx};
+#[cfg(STM32C0)]
+use embassy_stm32::usart::RxDma;
 use crate::builder::uart::base::UartBase;
 use crate::builder::uart::uart2::Irqs;
 
@@ -31,6 +37,8 @@ pub enum Uart2Rx {
     PA13(PA13),
     #[cfg(USART2_PA14)]
     PA14(PA14),
+    #[cfg(USART2_PA15)]
+    PA15(PA15),
     #[cfg(USART2_PD6)]
     PD6(PD6),
 }
@@ -38,6 +46,10 @@ pub enum Uart2Rx {
 /// uart2 rtx pin
 pub enum Uart2Rts {
     PA1(PA1),
+    #[cfg(USART2_PB9)]
+    PB9(PB9),
+    #[cfg(USART2_PC14)]
+    PC14(PC14),
     #[cfg(USART2_PD4)]
     PD4(PD4),
 }
@@ -66,6 +78,8 @@ macro_rules! uart2_rx_build {
                 Uart2Rx::PA13(pa13) => { Self::build_rts(pa13, rx_dma, self.base, self.rts) }
                 #[cfg(USART2_PA14)]
                 Uart2Rx::PA14(pa14) => { Self::build_rts(pa14, rx_dma, self.base, self.rts) }
+                #[cfg(USART2_PA15)]
+                Uart2Rx::PA15(pa15) => { Self::build_rts(pa15, rx_dma, self.base, self.rts) }
                 #[cfg(USART2_PD6)]
                 Uart2Rx::PD6(pd6) => { Self::build_rts(pd6, rx_dma, self.base, self.rts) }
             }
@@ -83,6 +97,10 @@ macro_rules! uart2_rx_build {
 
             match rts {
                 Uart2Rts::PA1(pa1) => { UartRx::new_with_rts(base.uart, Irqs, rx, pa1, rx_dma, base.config.unwrap_or_default()) }
+                #[cfg(USART2_PB9)]
+                Uart2Rts::PB9(pb9) => { UartRx::new_with_rts(base.uart, Irqs, rx, pb9, rx_dma, base.config.unwrap_or_default()) }
+                #[cfg(USART2_PC14)]
+                Uart2Rts::PC14(pb14) => { UartRx::new_with_rts(base.uart, Irqs, rx, pb14, rx_dma, base.config.unwrap_or_default()) }
                 #[cfg(USART2_PD4)]
                 Uart2Rts::PD4(pd4) => { UartRx::new_with_rts(base.uart, Irqs, rx, pd4, rx_dma, base.config.unwrap_or_default()) }
             }
@@ -113,39 +131,7 @@ impl Uart2RxBuilder {
     }
 
     #[cfg(STM32C0)]
-    uart2_rx_build!(DMA1_CH1);
+    uart2_rx_build!(impl Peripheral<P = impl RxDma<USART2>> + 'static);
     #[cfg(not(STM32C0))]
     uart2_rx_build!(DMA1_CH6);
-    /*/// build uart rx that supports read data
-    pub fn build(self, rx_dma: DMA1_CH6) -> Result<UartRx<'static, Async>, ConfigError> {
-        match self.rx {
-            #[cfg(USART2_PA3)]
-            Uart2Rx::PA3(pa3) => { Self::build_rts(pa3, rx_dma, self.base, self.rts) }
-            #[cfg(USART2_PA5)]
-            Uart2Rx::PA5(pa5) => { Self::build_rts(pa5, rx_dma, self.base, self.rts) }
-            #[cfg(USART2_PA13)]
-            Uart2Rx::PA13(pa13) => { Self::build_rts(pa13, rx_dma, self.base, self.rts) }
-            #[cfg(USART2_PA14)]
-            Uart2Rx::PA14(pa14) => { Self::build_rts(pa14, rx_dma, self.base, self.rts) }
-            #[cfg(USART2_PD6)]
-            Uart2Rx::PD6(pd6) => { Self::build_rts(pd6, rx_dma, self.base, self.rts) }
-        }
-    }
-
-    /// build by rts
-    fn build_rts(
-        rx: impl Peripheral<P=impl RxPin<USART2>> + 'static,
-        rx_dma: DMA1_CH6,
-        base: UartBase<USART2>,
-        rts: Option<Uart2Rts>)
-        -> Result<UartRx<'static, Async>, ConfigError> {
-        let rts = crate::match_some_return!(rts,
-            UartRx::new(base.uart, Irqs, rx, rx_dma, base.config.unwrap_or_default()));
-
-        match rts {
-            Uart2Rts::PA1(pa1) => { UartRx::new_with_rts(base.uart, Irqs, rx, pa1, rx_dma, base.config.unwrap_or_default()) }
-            #[cfg(USART2_PD4)]
-            Uart2Rts::PD4(pd4) => { UartRx::new_with_rts(base.uart, Irqs, rx, pd4, rx_dma, base.config.unwrap_or_default()) }
-        }
-    }*/
 }

@@ -1,10 +1,10 @@
 use embassy_stm32::i2c::{Config, I2c, SclPin};
+#[cfg(STM32C0)]
+use embassy_stm32::i2c::{RxDma, TxDma};
 use embassy_stm32::{bind_interrupts, i2c, Peripheral};
 use embassy_stm32::mode::{Async, Blocking};
 #[cfg(not(STM32C0))]
 use embassy_stm32::peripherals::{DMA1_CH6, DMA1_CH7};
-#[cfg(STM32C0)]
-use embassy_stm32::peripherals::{DMA1_CH1, DMA1_CH2};
 use embassy_stm32::peripherals::{I2C1, PB6, PB7};
 #[cfg(PB8)]
 use embassy_stm32::peripherals::PB8;
@@ -101,7 +101,7 @@ impl I2c1Builder {
     }
 
     #[cfg(STM32C0)]
-    i2c1_build!(DMA1_CH1,DMA1_CH2);
+    i2c1_build!(impl Peripheral<P = impl TxDma<I2C1>> + 'static,impl Peripheral<P = impl RxDma<I2C1>> + 'static);
     #[cfg(not(STM32C0))]
     i2c1_build!(DMA1_CH6,DMA1_CH7);
 
