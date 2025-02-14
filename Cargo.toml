@@ -10,8 +10,12 @@ categories = ["embedded"]
 repository = "https://github.com/lifeRobot/embassy-stm32-plus"
 
 [dependencies]
-embassy-stm32 = { version = "0.2.0", features = ["time-driver-any", "memory-x"], optional = true }
+embassy-stm32 = { version = "0.2.0", features = ["time-driver-any", "memory-x"] }
 embassy-usb = { version = "0.3.0", optional = true }
+
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+defmt-rtt = "0.4.1"
+panic-probe = { version = "0.3.2", features = ["print-defmt"] }
 
 [build-dependencies]
 stm32-metapac = { version = "16.0.0", default-features = false }

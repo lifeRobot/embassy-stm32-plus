@@ -1,4 +1,4 @@
-use embassy_stm32::{bind_interrupts, can, Peripheral};
+use embassy_stm32::Peripheral;
 use embassy_stm32::can::{Can, TxPin};
 #[cfg(CAN)]
 use embassy_stm32::peripherals::CAN;
@@ -13,22 +13,7 @@ use embassy_stm32::peripherals::PB9;
 use embassy_stm32::peripherals::PD0;
 #[cfg(any(CAN_PD1, CAN1_PD1))]
 use embassy_stm32::peripherals::PD1;
-
-#[cfg(CAN1)]
-bind_interrupts!(struct Irqs {
-    CAN1_RX0 => can::Rx0InterruptHandler<CAN1>;
-    CAN1_RX1 => can::Rx1InterruptHandler<CAN1>;
-    CAN1_SCE => can::SceInterruptHandler<CAN1>;
-    CAN1_TX => can::TxInterruptHandler<CAN1>;
-});
-
-#[cfg(CAN)]
-bind_interrupts!(pub struct Irqs {
-    USB_LP_CAN1_RX0 => can::Rx0InterruptHandler<CAN>;
-    CAN1_RX1 => can::Rx1InterruptHandler<CAN>;
-    CAN1_SCE => can::SceInterruptHandler<CAN>;
-    USB_HP_CAN1_TX => can::TxInterruptHandler<CAN>;
-});
+use crate::irq_s::usb_can1::Irqs;
 
 /// can1 rx pin
 pub enum Can1Rx {

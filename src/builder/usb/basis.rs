@@ -1,4 +1,3 @@
-use embassy_stm32::{bind_interrupts, usb};
 use embassy_stm32::peripherals::{PA11, PA12, USB};
 use embassy_stm32::usb::Driver;
 use embassy_usb::{Builder, Config, UsbDevice};
@@ -7,13 +6,7 @@ use embassy_usb::class::cdc_ncm::CdcNcmClass;
 use crate::builder::usb::acm_state::AcmState;
 use crate::builder::usb::buf::UsbBuf;
 use crate::builder::usb::ncm_state::NcmState;
-
-bind_interrupts!(struct Irqs {
-    #[cfg(STM32F102)]
-    USB_LP => usb::InterruptHandler<USB>;
-    #[cfg(STM32F103)]
-    USB_LP_CAN1_RX0 => usb::InterruptHandler<USB>;
-});
+use crate::irq_s::usb_can1::Irqs;
 
 /// usb builder
 pub struct UsbBuilder {
