@@ -63,7 +63,7 @@ pub struct I2c1Builder {
 /// i2c1 build method
 macro_rules! i2c1_build {
     ($tx_dma:ty,$rx_dma:ty) => {
-        /// Create a new I2C driver, more see [I2c::<Async>::new]
+        /// Create a new I2C driver, more see [`I2c::<Async>::new`]
         pub fn build(self, tx_dma: $tx_dma, rx_dma: $rx_dma) -> I2c<'static, Async> {
             match self.scl {
                 #[cfg(I2C1_PA9)]
@@ -123,7 +123,7 @@ impl I2c1Builder {
     #[cfg(not(STM32C0))]
     i2c1_build!(DMA1_CH6,DMA1_CH7);
 
-    /// Create a new I2C driver, more see [I2c::<Blocking>::new_blocking]
+    /// Create a new I2C driver, more see [`I2c::<Blocking>::new_blocking`]
     pub fn build_blocking(self) -> I2c<'static, Blocking> {
         match self.scl {
             #[cfg(I2C1_PA9)]

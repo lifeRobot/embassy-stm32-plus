@@ -40,7 +40,7 @@ impl Spi3RxBuilder {
     }
 
     /// Create a new SPI driver, in RX-only mode (only MISO pin, no MOSI).<br />
-    /// more see [Spi::<Async>::new_rxonly]
+    /// more see [`Spi::<Async>::new_rxonly`]
     #[inline]
     pub fn build(self, tx_dma: DMA2_CH2, rx_dma: DMA2_CH1) -> Spi<'static, Async> {
         let Self { base, sck, miso } = self;
@@ -66,7 +66,7 @@ impl Spi3RxBuilder {
     }
 
     /// Create a new blocking SPI driver, in RX-only mode (only MISO pin, no MOSI).<br />
-    /// more see [Spi::<Blocking>::new_blocking_rxonly]
+    /// more see [`Spi::<Blocking>::new_blocking_rxonly`]
     #[inline]
     pub fn build_blocking(self) -> Spi<'static, Blocking> {
         let Self { base, sck, miso } = self;

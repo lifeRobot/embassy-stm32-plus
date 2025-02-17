@@ -46,7 +46,7 @@ impl Spi3Builder {
     }
 
     /// Create a new SPI driver.<br />
-    /// more see [Spi::<Async>::new]
+    /// more see [`Spi::<Async>::new`]
     #[inline]
     pub fn build(self, tx_dma: DMA2_CH2, rx_dma: DMA2_CH1) -> Spi<'static, Async> {
         let Self { base, sck, mosi, miso } = self;
@@ -88,7 +88,7 @@ impl Spi3Builder {
     }
 
     /// Create a new blocking SPI driver.<br />
-    /// more see [Spi::<Blocking>::new_blocking]
+    /// more see [`Spi::<Blocking>::new_blocking`]
     #[inline]
     pub fn build_blocking(self) -> Spi<'static, Blocking> {
         let Self { base, sck, mosi, miso } = self;

@@ -49,7 +49,7 @@ pub struct Spi1Builder {
 macro_rules! spi1_build {
     ($tx_dma:ty,$rx_dma:ty) => {
         /// Create a new SPI driver.<br />
-        /// more see [Spi::<Async>::new]
+        /// more see [`Spi::<Async>::new`]
         pub fn build(self, tx_dma: $tx_dma, rx_dma: $rx_dma) -> Spi<'static, Async> {
             let Self { base, sck, mosi, miso } = self;
             let rx = Spi1RxBuilder { base, sck, miso };
@@ -124,7 +124,7 @@ impl Spi1Builder {
     }
 
     /// Create a new blocking SPI driver.<br />
-    /// more see [Spi::<Blocking>::new_blocking]
+    /// more see [`Spi::<Blocking>::new_blocking`]
     pub fn build_blocking(self) -> Spi<'static, Blocking> {
         let Self { base, sck, mosi, miso } = self;
         let rx = Spi1RxBuilder { base, sck, miso };

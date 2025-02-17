@@ -39,7 +39,7 @@ fn main() {
 Cargo.toml file :
 
 ```toml
-embassy-stm32-plus = { version = "0.2.0", features = ["stm32f103rc", "exti"] }
+embassy-stm32-plus = { version = "0.2.1", features = ["stm32f103rc", "exti"] }
 embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
 
 cortex-m-rt = "0.7.5"
@@ -112,7 +112,7 @@ async fn reply_write_flush(uart: &mut Uart<'static, Async>, buf: &[u8]) -> Resul
 Cargo.toml:
 
 ```toml
-embassy-stm32-plus = { version = "0.2.0", features = ["stm32f103rc", "exti"] }
+embassy-stm32-plus = { version = "0.2.1", features = ["stm32f103rc", "exti"] }
 embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
 embassy-time = "0.4.0"
 
@@ -172,7 +172,7 @@ you can try using the following method to directly generate peripheral protocol 
 `p.USB_OTG_FS.builder(dp,dm).build_cdc_acm(config,ep_buf,usb_buf,state)`   
 `p.IWDG.build(timeout_us)`
 
-for more API interfaces, please refer to [docs.rs](https://docs.rs/embassy-stm32-plus/0.2.0/embassy_stm32_plus/)
+for more API interfaces, please refer to [docs.rs](https://docs.rs/embassy-stm32-plus/0.2.1/embassy_stm32_plus/)
 
 </details>
 

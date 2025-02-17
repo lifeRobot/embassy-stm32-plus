@@ -34,14 +34,14 @@ impl Spi2Builder {
     }
 
     /// Create a new SPI driver.<br />
-    /// more see [Spi::<Async>::new]
+    /// more see [`Spi::<Async>::new`]
     #[inline]
     pub fn build(self, tx_dma: DMA1_CH5, rx_dma: DMA1_CH4) -> Spi<'static, Async> {
         Spi::new(self.base.spi, self.sck, self.mosi, self.miso, tx_dma, rx_dma, self.base.config.unwrap_or_default())
     }
 
     /// Create a new blocking SPI driver.<br />
-    /// more see [Spi::<Blocking>::new_blocking]
+    /// more see [`Spi::<Blocking>::new_blocking`]
     #[inline]
     pub fn build_blocking(self) -> Spi<'static, Blocking> {
         Spi::new_blocking(self.base.spi, self.sck, self.mosi, self.miso, self.base.config.unwrap_or_default())

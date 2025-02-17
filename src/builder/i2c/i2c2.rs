@@ -43,13 +43,13 @@ impl I2c2Builder {
         self
     }
 
-    /// Create a new I2C driver, more see [I2c::<Async>::new]
+    /// Create a new I2C driver, more see [`I2c::<Async>::new`]
     pub fn build(self, tx_dma: DMA1_CH4, rx_dma: DMA1_CH5) -> I2c<'static, Async> {
         let Self { base, scl, sda } = self;
         I2c::new(base.i2c, scl, sda, Irqs, tx_dma, rx_dma, base.freq.unwrap_or_else(|| { Hertz(1) }), base.config.unwrap_or_default())
     }
 
-    /// Create a new I2C driver, more see [I2c::<Blocking>::new_blocking]
+    /// Create a new I2C driver, more see [`I2c::<Blocking>::new_blocking`]
     pub fn build_blocking(self) -> I2c<'static, Blocking> {
         let Self { base, scl, sda } = self;
         I2c::new_blocking(base.i2c, scl, sda, base.freq.unwrap_or_else(|| { Hertz(1) }), base.config.unwrap_or_default())

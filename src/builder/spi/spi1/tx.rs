@@ -45,7 +45,7 @@ pub struct Spi1TxBuilder {
 macro_rules! spi1_tx_build {
     ($tx_dma:ty) => {
         /// Create a new SPI driver, in TX-only mode (only MOSI pin, no MISO).<br />
-        /// more see [Spi::<Async>::new_txonly]
+        /// more see [`Spi::<Async>::new_txonly`]
         pub fn build(self, sck: Spi1Sck, tx_dma: $tx_dma) -> Spi<'static, Async> {
             match sck {
                 #[cfg(SPI1_PA1)]
@@ -79,7 +79,7 @@ macro_rules! spi1_tx_build {
         }
 
         /// Create a new SPI driver, in TX-only mode, without SCK pin.<br />
-        /// more see [Spi::<Async>::new_txonly_nosck]
+        /// more see [`Spi::<Async>::new_txonly_nosck`]
         pub fn build_nosck(self, tx_dma: $tx_dma) -> Spi<'static, Async> {
             match self.mosi {
                 #[cfg(SPI1_PA2)]
@@ -113,7 +113,7 @@ impl Spi1TxBuilder {
     }
 
     /// Create a new blocking SPI driver, in TX-only mode (only MOSI pin, no MISO).<br />
-    /// more see [Spi::<Blocking>::new_blocking_txonly]
+    /// more see [`Spi::<Blocking>::new_blocking_txonly`]
     pub fn build_blocking(self, sck: Spi1Sck) -> Spi<'static, Blocking> {
         match sck {
             #[cfg(SPI1_PA1)]
@@ -144,7 +144,7 @@ impl Spi1TxBuilder {
     }
 
     /// Create a new SPI driver, in TX-only mode, without SCK pin.<br />
-    /// more see [Spi::<Blocking>::new_blocking_txonly_nosck]
+    /// more see [`Spi::<Blocking>::new_blocking_txonly_nosck`]
     pub fn build_blocking_nosck(self) -> Spi<'static, Blocking> {
         match self.mosi {
             #[cfg(SPI1_PA2)]

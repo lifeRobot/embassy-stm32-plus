@@ -38,7 +38,7 @@ impl Spi3TxBuilder {
     }
 
     /// Create a new SPI driver, in TX-only mode (only MOSI pin, no MISO).<br />
-    /// more see [Spi::<Async>::new_txonly]
+    /// more see [`Spi::<Async>::new_txonly`]
     pub fn build(self, sck: Spi3Sck, tx_dma: DMA2_CH2) -> Spi<'static, Async> {
         match sck {
             Spi3Sck::PB3(pb3) => { self.build_mosi(pb3, tx_dma) }
@@ -57,7 +57,7 @@ impl Spi3TxBuilder {
     }
 
     /// Create a new SPI driver, in TX-only mode, without SCK pin.<br />
-    /// more see [Spi::<Async>::new_txonly_nosck]
+    /// more see [`Spi::<Async>::new_txonly_nosck`]
     pub fn build_nosck(self, tx_dma: DMA2_CH2) -> Spi<'static, Async> {
         match self.mosi {
             Spi3Mosi::PB5(pb5) => { Spi::new_txonly_nosck(self.base.spi, pb5, tx_dma, self.base.config.unwrap_or_default()) }
@@ -67,7 +67,7 @@ impl Spi3TxBuilder {
     }
 
     /// Create a new blocking SPI driver, in TX-only mode (only MOSI pin, no MISO).<br />
-    /// more see [Spi::<Blocking>::new_blocking_txonly]
+    /// more see [`Spi::<Blocking>::new_blocking_txonly`]
     pub fn build_blocking(self, sck: Spi3Sck) -> Spi<'static, Blocking> {
         match sck {
             Spi3Sck::PB3(pb3) => { self.build_blocking_mosi(pb3) }
@@ -86,7 +86,7 @@ impl Spi3TxBuilder {
     }
 
     /// Create a new SPI driver, in TX-only mode, without SCK pin.<br />
-    /// more see [Spi::<Blocking>::new_blocking_txonly_nosck]
+    /// more see [`Spi::<Blocking>::new_blocking_txonly_nosck`]
     #[inline]
     pub fn build_blocking_nosck(self) -> Spi<'static, Blocking> {
         match self.mosi {

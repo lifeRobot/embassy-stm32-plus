@@ -1,6 +1,6 @@
 [package]
 name = "embassy-stm32-plus"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "embassy-stm32 plus"
 readme = "Readme.md"
@@ -139,3 +139,6 @@ stm32f107rc = ["embassy-stm32/stm32f107rc", "stm32-metapac/stm32f107rc", "embass
 stm32f107vb = ["embassy-stm32/stm32f107vb", "stm32-metapac/stm32f107vb", "embassy-usb"]
 stm32f107vc = ["embassy-stm32/stm32f107vc", "stm32-metapac/stm32f107vc", "embassy-usb"]
 # stm32l010c6 = ["embassy-stm32/stm32l010c6", "stm32-metapac/stm32l010c6"]
+
+[package.metadata.docs.rs]
+features = ["stm32f107vc"]
