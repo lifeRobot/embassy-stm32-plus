@@ -1,6 +1,6 @@
 [package]
 name = "embassy-stm32-plus"
-version = "0.1.4"
+version = "0.2.0"
 edition = "2021"
 description = "embassy-stm32 plus"
 readme = "Readme.md"
@@ -10,7 +10,7 @@ categories = ["embedded"]
 repository = "https://github.com/lifeRobot/embassy-stm32-plus"
 
 [dependencies]
-embassy-stm32 = { version = "0.2.0", features = ["time-driver-any", "memory-x"] }
+embassy-stm32 = { version = "0.2.0", features = ["defmt", "unstable-pac", "time-driver-any", "memory-x"] }
 embassy-usb = { version = "0.3.0", optional = true }
 
 cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
@@ -33,6 +33,10 @@ stm32c031f4 = ["embassy-stm32/stm32c031f4", "stm32-metapac/stm32c031f4"]
 stm32c031f6 = ["embassy-stm32/stm32c031f6", "stm32-metapac/stm32c031f6"]
 stm32c031g4 = ["embassy-stm32/stm32c031g4", "stm32-metapac/stm32c031g4"]
 stm32c031g6 = ["embassy-stm32/stm32c031g6", "stm32-metapac/stm32c031g6"]
+stm32c031k4 = ["embassy-stm32/stm32c031k4", "stm32-metapac/stm32c031k4"]
+stm32c031k6 = ["embassy-stm32/stm32c031k6", "stm32-metapac/stm32c031k6"]
+stm32c031c4 = ["embassy-stm32/stm32c031c4", "stm32-metapac/stm32c031c4"]
+stm32c031c6 = ["embassy-stm32/stm32c031c6", "stm32-metapac/stm32c031c6"]
 # stm32f100 19
 stm32f100c4 = ["embassy-stm32/stm32f100c4", "stm32-metapac/stm32f100c4"]
 stm32f100c6 = ["embassy-stm32/stm32f100c6", "stm32-metapac/stm32f100c6"]

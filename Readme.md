@@ -2,17 +2,36 @@
 
 Make Rust Embedded simpler
 
+embassy-stm32_plus is a library based on [embassy-stm32](https://crates.io/crates/embassy-stm32) secondary encapsulation, 
+which supports generating peripheral objects directly through Device stream without manually setting Irqs interrupts, 
+such as directly generating gpio output objects `p.PA8.output()` and directly generating 
+UART objects    
+```
+p.USART1.builder(Uart1Tx::PA9(p.PA9), Uart1Rx::PA10(p.PA10))
+    .build(p.DMA1_CH4, p.DMA1_CH5);
+```   
+etc
+
 ### support now
 
-- stm32f100xx &#10004;
-- stm32f101xx &#10004;
-- stm32f102xx &#10004;
-- stm32f103xx &#10004;
-- stm32f105xx &#10004;
-- stm32f107xx &#10004;
+- STM32F1 &#10004;
+- STM32C0 &#10004;
 - more support comming soon
 
 ### example
+
+build.rs file:   
+(build.rs is necessary, otherwise it may result in inability to burn)
+```rust
+fn main() {
+    println!("cargo:rustc-link-arg-bins=--nmagic");
+    println!("cargo:rustc-link-arg-bins=-Tlink.x");
+    println!("cargo:rustc-link-arg-bins=-Tdefmt.x");
+
+    // Set DEFMT_LOG=info through environment variables to enable probe rs to support defmt: Output of info level log for info
+    println!("cargo:rustc-env=DEFMT_LOG=info");
+}
+```
 
 <details open>
 <summary>uart example</summary>
@@ -20,11 +39,11 @@ Make Rust Embedded simpler
 Cargo.toml file :
 
 ```toml
-embassy-stm32-plus = { git = "https://github.com/lifeRobot/embassy-stm32-plus", features = ["stm32f103rc"] }
-embassy-executor = { version = "0.6.3", features = ["arch-cortex-m", "executor-thread"] }
-defmt-rtt = "0.4.1"
-cortex-m-rt = "0.7.3"
-panic-probe = { version = "0.3.2", features = ["print-defmt"] }
+embassy-stm32-plus = { version = "0.2.0", features = ["stm32f103rc", "exti"] }
+embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
+
+cortex-m-rt = "0.7.5"
+defmt = "0.3.10"
 ```
 
 main.rs file :
@@ -34,32 +53,53 @@ main.rs file :
 #![no_main]
 
 use embassy_executor::Spawner;
-use embassy_stm32_plus::builder::uart::uart1::Uart1Builder;
 use embassy_stm32_plus::builder::uart::uart1::rx::Uart1Rx;
 use embassy_stm32_plus::builder::uart::uart1::tx::Uart1Tx;
 use embassy_stm32_plus::embassy_stm32;
-use {defmt_rtt as _, panic_probe as _};
+use embassy_stm32_plus::embassy_stm32::mode::Async;
+use embassy_stm32_plus::embassy_stm32::usart::{Error, Uart};
+use embassy_stm32_plus::traits::uart::uart1::Uart1Trait;
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
+    // init stm32, get Peripheral
     let p = embassy_stm32::init(Default::default());
-    // just write
-    /*let mut tx = Uart1TxBuilder::new(p.USART1, Uart1Tx::PA9(p.PA9))
-        .build_write(p.DMA1_CH4).unwrap();
-    tx.write(b"hello world").await.unwrap();*/
 
-    // just read
-    /*let mut rx = Uart1RxBuilder::new(p.USART1, Uart1Rx::PA10(p.PA10))
-        .build_read(p.DMA1_CH5).unwrap();
-    let mut bytes = [0; 1024];
-    rx.read(&mut bytes).await.unwrap();*/
+    // set uart baud rate etc
+    // let mut uart_config = embassy_stm32::usart::Config::default();
+    // uart_config.baudrate = 9600;
 
-    // read and write
-    let mut uart = Uart1Builder::new(p.USART1, Uart1Tx::PA9(p.PA9), Uart1Rx::PA10(p.PA10))
-        .build_all(p.DMA1_CH4, p.DMA1_CH5).unwrap();
-    uart.write(b"hello world").await.unwrap();
-    let mut bytes = [0; 1024];
-    uart.read(&mut bytes).await.unwrap();
+    let mut uart = p.USART1.builder(Uart1Tx::PA9(p.PA9), Uart1Rx::PA10(p.PA10))
+        // set uart config
+        // .config(Config::default())
+        .build(p.DMA1_CH4, p.DMA1_CH5).unwrap();
+    defmt::info!("uart initialized!");
+
+    let mut buf = [0u8; 1024];
+    loop {
+        // wait uart read
+        let len = match uart.read_until_idle(&mut buf).await {
+            Ok(len) => { len }
+            Err(e) => {
+                defmt::error!("uart read error: {:?}", e);
+                continue;
+            }
+        };
+
+        defmt::info!("uart read, len is {}", len);
+
+        // reply uart
+        if let Err(e) = reply_write_flush(&mut uart, &buf[0..len]).await {
+            defmt::error!("uart write error: {:?}",e);
+        }
+    }
+}
+
+/// uart write and flush
+async fn reply_write_flush(uart: &mut Uart<'static, Async>, buf: &[u8]) -> Result<(), Error> {
+    uart.write(b"copy, ").await?;
+    uart.write(buf).await?;
+    uart.flush().await
 }
 
 ```
@@ -72,11 +112,12 @@ async fn main(_spawner: Spawner) {
 Cargo.toml:
 
 ```toml
-embassy-stm32-plus = { version = "0.1.4", features = ["stm32f103rc"] }
-embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
-defmt-rtt = "0.4.1"
-cortex-m-rt = "0.7.3"
-panic-probe = { version = "0.3.2", features = ["print-defmt"] }
+embassy-stm32-plus = { path = "../../../../../../github/rust/embassy-stm32-plus", features = ["stm32f103rc", "exti"] }
+embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
+embassy-time = "0.4.0"
+
+cortex-m-rt = "0.7.5"
+defmt = "0.3.10"
 ```
 
 ```rust
@@ -85,9 +126,8 @@ panic-probe = { version = "0.3.2", features = ["print-defmt"] }
 
 use embassy_executor::Spawner;
 use embassy_stm32_plus::embassy_stm32;
-use embassy_stm32_plus::embassy_time::Timer;
-use embassy_stm32_plus::traits::gpio::output::GpioOutput;
-use {defmt_rtt as _, panic_probe as _};
+use embassy_stm32_plus::traits::gpio::GpioTrait;
+use embassy_time::Timer;
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
@@ -96,6 +136,7 @@ async fn main(_spawner: Spawner) {
 
     // simple get output/input gpio
     let mut led = p.PA8.output();
+    defmt::info!("led initialized!");
 
     // change gpio level
     loop {
@@ -111,361 +152,30 @@ async fn main(_spawner: Spawner) {
 </details>
 
 <details>
-<summary>usb example</summary>
+<summary>more example</summary>
 
-Cargo.toml file:
+more example coming soon,   
+you can try using the following method to directly generate peripheral protocol objects:
+`p.PA8.input()`   
+`p.PA8.output()`   
+`p.ADC.build()`   
+`p.CAN1.build(tx,rx)`   
+`p.CRC.build()`   
+`p.DAC1.builder(ch1,ch2).build(dma_ch1,dma_ch2)`   
+`p.ETH.builder(pins,phy).build.`   
+`p.FLASH.build()`   
+`p.I2C1.builder(scl,sda).build(tx_dma,rx_dma)`   
+`p.SPI1.builder(sck,mosi,miso).build(tx_dma,rx_dma)`   
+`p.UART1.builder(tx,rx).build(tx_dma,rx_dma)`   
+`p.UID.uid()`   
+`p.USB.builder(dp,dm).build_cdc_acm(config,usb_buf,state)`   
+`p.USB_OTG_FS.builder(dp,dm).build_cdc_acm(config,ep_buf,usb_buf,state)`   
+`p.IWDG.build(timeout_us)`
 
-```toml
-embassy-stm32-plus = { version = "0.1.4", features = ["stm32f103rc"] }
-embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
-embassy-futures = { version = "0.1.1" }
-defmt = "0.3.8"
-defmt-rtt = "0.4.1"
-cortex-m = { version = "0.7.7", features = ["inline-asm", "critical-section-single-core"] }
-cortex-m-rt = "0.7.3"
-panic-probe = { version = "0.3.2", features = ["print-defmt"] }
-```
-
-main.rs file:
-
-```rust
-#![no_std]
-#![no_main]
-
-use embassy_executor::Spawner;
-use embassy_stm32_plus::embassy_stm32;
-use embassy_stm32_plus::embassy_stm32::peripherals::USB;
-use embassy_stm32_plus::embassy_stm32::usb::Driver;
-use embassy_stm32_plus::embassy_usb::class::cdc_acm::CdcAcmClass;
-use embassy_stm32_plus::embassy_usb::Config;
-use embassy_stm32_plus::embassy_usb::driver::EndpointError;
-use embassy_stm32_plus::traits::usb::acm_state::AcmState;
-use embassy_stm32_plus::traits::usb::buf::UsbBuf;
-use embassy_stm32_plus::traits::usb::UsbTrait;
-use {defmt_rtt as _, panic_probe as _};
-
-#[embassy_executor::main]
-async fn main(_spawner: Spawner) {
-    // rcc setting or etc., more see https://github.com/embassy-rs/embassy/blob/main/examples/stm32f3/src/bin/usb_serial.rs
-    let p = embassy_stm32::init(Default::default());
-
-    // build default usb device
-    let mut usb_buf = UsbBuf::default();
-    let mut acm_state = AcmState::default();
-    let (mut class, mut usb) = p.USB.build_cdc_acm(p.PA12, p.PA11, &mut usb_buf, &mut acm_state, Config::new(0xc0de, 0xcafe));
-
-    // usb business
-    let echo_fut = async {
-        loop {
-            class.wait_connection().await;
-            defmt::info!("Connected");
-            let _ = echo(&mut class).await;
-            defmt::info!("Disconnected");
-        }
-    };
-
-    // wait usb business
-    embassy_futures::join::join(echo_fut, usb.run()).await;
-}
-
-async fn echo<'d>(class: &mut CdcAcmClass<'d, Driver<'d, USB>>) -> Result<(), EndpointError> {
-    let mut buf = [0; 64];
-    loop {
-        let n = class.read_packet(&mut buf).await?;
-        let data = &buf[..n];
-        defmt::info!("data: {:x}", data);
-        class.write_packet(data).await?;
-    }
-}
-
-```
+for more API interfaces, please refer to [docs.rs](https://docs.rs/embassy-stm32-plus/0.2.0/embassy_stm32_plus/)
 
 </details>
 
-<details>
-<summary>usb otg example</summary>
-
-Cargo.toml file:
-
-```toml
-embassy-stm32-plus = { version = "0.1.4", features = ["stm32f105vc"] }
-embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
-embassy-futures = { version = "0.1.1" }
-defmt = "0.3.8"
-defmt-rtt = "0.4.1"
-cortex-m = { version = "0.7.7", features = ["inline-asm", "critical-section-single-core"] }
-cortex-m-rt = "0.7.3"
-panic-probe = { version = "0.3.2", features = ["print-defmt"] }
-```
-
-main.rs file:
-
-```rust
-#![no_std]
-#![no_main]
-
-use embassy_executor::Spawner;
-use embassy_stm32_plus::embassy_stm32;
-use embassy_stm32_plus::embassy_stm32::peripherals::USB_OTG_FS;
-use embassy_stm32_plus::embassy_stm32::usb_otg::Driver;
-use embassy_stm32_plus::embassy_usb::class::cdc_acm::CdcAcmClass;
-use embassy_stm32_plus::embassy_usb::Config;
-use embassy_stm32_plus::embassy_usb::driver::EndpointError;
-use embassy_stm32_plus::traits::usb::acm_state::AcmState;
-use embassy_stm32_plus::traits::usb::buf::UsbBuf;
-use embassy_stm32_plus::traits::usb::otg::UsbOtgTrait;
-use {defmt_rtt as _, panic_probe as _};
-
-#[embassy_executor::main]
-async fn main(_spawner: Spawner) {
-    // rcc setting or etc., more see https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/usb_serial.rs
-    let p = embassy_stm32::init(Default::default());
-
-    // build default usb device
-    let mut buffer = [0; 256];
-    let mut usb_buf = UsbBuf::default();
-    let mut state = AcmState::default();
-    let (mut class, mut usb) = p.USB_OTG_FS.build_cdc_acm(p.PA12, p.PA11, &mut buffer, &mut usb_buf, &mut state, Config::new(0xc0de, 0xcafe));
-
-    // usb business
-    let echo_fut = async {
-        loop {
-            class.wait_connection().await;
-            defmt::info!("Connected");
-            let _ = echo(&mut class).await;
-            defmt::info!("Disconnected");
-        }
-    };
-
-    // wait usb business
-    embassy_futures::join::join(echo_fut, usb.run()).await;
-}
-
-async fn echo<'d>(class: &mut CdcAcmClass<'d, Driver<'d, USB_OTG_FS>>) -> Result<(), EndpointError> {
-    let mut buf = [0; 64];
-    loop {
-        let n = class.read_packet(&mut buf).await?;
-        let data = &buf[..n];
-        defmt::info!("data: {:x}", data);
-        class.write_packet(data).await?;
-    }
-}
-```
-
-</details>
-
-<details>
-<summary>eth example (stm32f107xx)</summary>
-Tips: currently, only stm32f107xx in the cargo crate supports eth
-
-Cargo.toml file:
-
-```toml
-embassy-stm32-plus = { version = "0.1.4", features = ["stm32f107vc"] }
-embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
-embassy-net = { version = "0.5.0", features = ["dhcpv4", "tcp"] }
-embedded-io-async = "0.6.1"
-static_cell = "2.1.0"
-defmt = "0.3.8"
-defmt-rtt = "0.4.1"
-cortex-m-rt = "0.7.3"
-panic-probe = { version = "0.3.2", features = ["print-defmt"] }
-```
-
-main.rs file:
-
-```rust
-#![no_std]
-#![no_main]
-
-use embassy_executor::Spawner;
-use embassy_net::{Ipv4Address, StackResources};
-use embassy_net::tcp::TcpSocket;
-use embassy_stm32_plus::{embassy_stm32, embassy_time};
-use embassy_stm32_plus::embassy_stm32::eth::generic_smi::GenericSMI;
-use embassy_stm32_plus::embassy_stm32::eth::{Ethernet, PacketQueue};
-use embassy_stm32_plus::embassy_stm32::peripherals::ETH;
-use embassy_stm32_plus::embassy_time::Timer;
-use embassy_stm32_plus::traits::eth::Eth1;
-use embedded_io_async::Write;
-use static_cell::StaticCell;
-use {defmt_rtt as _, panic_probe as _};
-
-#[embassy_executor::main]
-async fn main(spawner: Spawner) {
-    // rcc setting or etc., more see https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
-    let p = embassy_stm32::init(Default::default());
-
-    // simple build eth
-    static PACKETS: StaticCell<PacketQueue<4, 4>> = StaticCell::new();
-    let mac_addr = [0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF];
-    let eth = p.ETH.eth1(&p, PACKETS.init(PacketQueue::<4, 4>::new()), GenericSMI::new(0), mac_addr);
-
-    // Init network stack, copy from https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
-    let config = embassy_net::Config::dhcpv4(Default::default());
-    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
-    // stm32f107 not support rng, random seed set default 0
-    let (stack, runner) = embassy_net::new(eth, config, RESOURCES.init(StackResources::new()), 0);
-    defmt::unwrap!(spawner.spawn(net_task(runner)));
-    stack.wait_config_up().await;
-
-    defmt::info!("Network task initialized");
-    // Then we can use it!
-    let mut rx_buffer = [0; 4096];
-    let mut tx_buffer = [0; 4096];
-
-    loop {
-        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-
-        socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
-
-        let remote_endpoint = (Ipv4Address::new(10, 42, 0, 1), 8000);
-        defmt::info!("connecting...");
-        let r = socket.connect(remote_endpoint).await;
-        if let Err(e) = r {
-            defmt::info!("connect error: {:?}", e);
-            Timer::after_secs(1).await;
-            continue;
-        }
-        defmt::info!("connected!");
-        let buf = [0; 1024];
-        loop {
-            let r = socket.write_all(&buf).await;
-            if let Err(e) = r {
-                defmt::info!("write error: {:?}", e);
-                break;
-            }
-            Timer::after_secs(1).await;
-        }
-    }
-}
-
-#[embassy_executor::task]
-async fn net_task(mut runner: embassy_net::Runner<'static, Ethernet<'static, ETH, GenericSMI>>) -> ! {
-    runner.run().await
-}
-```
-
-</details>
-
-<details>
-<summary>eth w5500 example</summary>
-
-Cargo.toml file:
-
-```toml
-embassy-stm32-plus = { git = "https://github.com/lifeRobot/embassy-stm32-plus", features = ["stm32f107vc", "exti"] }
-
-embassy-executor = { version = "0.6.0", features = ["arch-cortex-m", "executor-thread", "defmt", "integrated-timers"] }
-embassy-net = { version = "0.5.0", features = ["dhcpv4", "tcp"] }
-embassy-net-wiznet = "0.1.0"
-embedded-hal-bus = { version = "0.2.0", features = ["async"] }
-embedded-io-async = "0.6.1"
-static_cell = "2.1.0"
-defmt = "0.3.10"
-defmt-rtt = "0.4.1"
-cortex-m-rt = "0.7.3"
-panic-probe = { version = "0.3.2", features = ["print-defmt"] }
-```
-
-```rust
-#![no_std]
-#![no_main]
-
-use embassy_executor::Spawner;
-use embassy_net::{Ipv4Address, StackResources};
-use embassy_net::tcp::TcpSocket;
-use embassy_net_wiznet::{Device, Runner, State};
-use embassy_net_wiznet::chip::W5500;
-use embassy_stm32_plus::embassy_stm32;
-use embassy_stm32_plus::embassy_stm32::exti::ExtiInput;
-use embassy_stm32_plus::embassy_stm32::gpio::{Level, Output, Speed};
-use embassy_stm32_plus::embassy_stm32::peripherals::{DMA1_CH2, DMA1_CH3, PA4, PB0, PB1, SPI1};
-use embassy_stm32_plus::embassy_stm32::spi::Spi;
-use embassy_stm32_plus::embassy_time::{Delay, Duration, Timer};
-use embassy_stm32_plus::traits::gpio::input::GpioInput;
-use embassy_stm32_plus::traits::gpio::output::GpioOutput;
-use embassy_stm32_plus::traits::spi::SpiDmaTrait;
-use embedded_hal_bus::spi::ExclusiveDevice;
-use embedded_io_async::Write;
-use static_cell::StaticCell;
-use {defmt_rtt as _, panic_probe as _};
-
-#[embassy_executor::main]
-async fn main(spawner: Spawner) {
-    // rcc setting or etc., more see https://github.com/embassy-rs/embassy/blob/main/examples/stm32f4/src/bin/eth.rs
-    let p = embassy_stm32::init(Default::default());
-    let spi = p.SPI1.build_with_dma(p.PA5, p.PA7, p.PA6, p.DMA1_CH3, p.DMA1_CH2);
-    let cs = p.PA4.output_with_level_speed(Level::High, Speed::VeryHigh);
-    let spi = defmt::unwrap!(ExclusiveDevice::new(spi,cs,Delay));
-
-    let w5500_int = ExtiInput::new(p.PB0.input(), p.EXTI0);
-    let w5500_reset = p.PB1.output_with_level_speed(Level::High, Speed::VeryHigh);
-
-    let mac_addr = [0x02, 234, 3, 4, 82, 231];
-    static STATE: StaticCell<State<2, 2>> = StaticCell::new();
-    let state = STATE.init(State::<2, 2>::new());
-    let (device, runner) = embassy_net_wiznet::new(mac_addr, state, spi, w5500_int, w5500_reset)
-        .await;
-    defmt::unwrap!(spawner.spawn(ethernet_task(runner)));
-
-    let config = embassy_net::Config::dhcpv4(Default::default());
-    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
-    let (stack, runner) = embassy_net::new(device, config, RESOURCES.init(StackResources::new()), 0);
-    defmt::unwrap!(spawner.spawn(net_task(runner)));
-    stack.wait_config_up().await;
-
-    defmt::info!("Network task initialized");
-
-    // Then we can use it!
-    let mut rx_buffer = [0; 1024];
-    let mut tx_buffer = [0; 1024];
-
-    loop {
-        let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-
-        socket.set_timeout(Some(Duration::from_secs(10)));
-
-        let remote_endpoint = (Ipv4Address::new(10, 42, 0, 1), 8000);
-        defmt::info!("connecting...");
-        let r = socket.connect(remote_endpoint).await;
-        if let Err(e) = r {
-            defmt::info!("connect error: {:?}", e);
-            Timer::after_secs(1).await;
-            continue;
-        }
-        defmt::info!("connected!");
-        let buf = [0; 1024];
-        loop {
-            let r = socket.write_all(&buf).await;
-            if let Err(e) = r {
-                defmt::info!("write error: {:?}", e);
-                break;
-            }
-            Timer::after_secs(1).await;
-        }
-    }
-}
-
-#[allow(clippy::type_complexity)]
-#[embassy_executor::task]
-async fn ethernet_task(
-    runner:
-    Runner<'static, W5500,
-        ExclusiveDevice<Spi<'static, SPI1, DMA1_CH3, DMA1_CH2>, Output<'static, PA4>, Delay>,
-        ExtiInput<'static, PB0>,
-        Output<'static, PB1>>) -> ! {
-    runner.run().await
-}
-
-#[embassy_executor::task]
-async fn net_task(mut runner: embassy_net::Runner<'static, Device<'static>>) -> ! {
-    runner.run().await
-}
-
-```
-
-</details>
 
 ### Other instructions
 

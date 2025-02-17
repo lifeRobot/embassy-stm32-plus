@@ -143,9 +143,7 @@ impl Spi1Builder {
     }
 
     /// build blocking by rx
-    fn build_blocking_rx(
-        rx: Spi1RxBuilder,
-        mosi: impl Peripheral<P=impl MosiPin<SPI1>> + 'static) -> Spi<'static, Blocking> {
+    fn build_blocking_rx(rx: Spi1RxBuilder, mosi: impl Peripheral<P=impl MosiPin<SPI1>> + 'static) -> Spi<'static, Blocking> {
         let Spi1RxBuilder { base, sck, miso } = rx;
         match miso {
             #[cfg(SPI1_PA6)]

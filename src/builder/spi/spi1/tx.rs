@@ -145,7 +145,6 @@ impl Spi1TxBuilder {
 
     /// Create a new SPI driver, in TX-only mode, without SCK pin.<br />
     /// more see [Spi::<Blocking>::new_blocking_txonly_nosck]
-    #[inline]
     pub fn build_blocking_nosck(self) -> Spi<'static, Blocking> {
         match self.mosi {
             #[cfg(SPI1_PA2)]

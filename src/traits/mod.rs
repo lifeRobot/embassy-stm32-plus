@@ -8,6 +8,10 @@
     feature = "stm32c031f6",
     feature = "stm32c031g4",
     feature = "stm32c031g6",
+    feature = "stm32c031k4",
+    feature = "stm32c031k6",
+    feature = "stm32c031c4",
+    feature = "stm32c031c6",
 ))))]
 pub mod adc;
 #[cfg(any(CAN, CAN1, CAN2))]
