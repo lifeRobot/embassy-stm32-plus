@@ -112,7 +112,7 @@ async fn reply_write_flush(uart: &mut Uart<'static, Async>, buf: &[u8]) -> Resul
 Cargo.toml:
 
 ```toml
-embassy-stm32-plus = { path = "../../../../../../github/rust/embassy-stm32-plus", features = ["stm32f103rc", "exti"] }
+embassy-stm32-plus = { version = "0.2.0", features = ["stm32f103rc", "exti"] }
 embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
 embassy-time = "0.4.0"
 
